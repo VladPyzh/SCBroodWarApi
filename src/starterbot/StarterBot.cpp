@@ -28,6 +28,9 @@ void StarterBot::onFrame()
     m_mapTools.onFrame();
 
     // Send our idle workers to mine minerals so they don't just stand there
+
+    buildMarrines();
+
     sendIdleWorkersToMinerals();
 
     // Train more workers so we can gather more income
@@ -69,7 +72,7 @@ void StarterBot::sendIdleWorkersToMinerals()
 void StarterBot::trainAdditionalWorkers()
 {
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
-    const int workersWanted = 20;
+    const int workersWanted = 60;
     const int workersOwned = Tools::CountUnitsOfType(workerType, BWAPI::Broodwar->self()->getUnits());
     if (workersOwned < workersWanted)
     {
@@ -107,11 +110,29 @@ void StarterBot::buildBarracks() {
 
     const int minerals = BWAPI::Broodwar->self()->minerals();
 
-    if (price <= minerals) {
+    const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
+
+    if ((price <= minerals) && (barracksOwned < 3)){
         const bool startedBuilding = Tools::BuildBuilding(barracksType);
         if (startedBuilding)
         {
             BWAPI::Broodwar->printf("Started Building %s", barracksType.getName().c_str());
+        }
+    }
+
+}
+
+void StarterBot::buildMarrines() {
+    BWAPI::UnitType marineType = BWAPI::UnitTypes::Terran_Marine;
+    const int price = marineType.mineralPrice();
+
+    const int minerals = BWAPI::Broodwar->self()->minerals();
+
+    const int barracksOwned = Tools::CountUnitsOfType(marineType, BWAPI::Broodwar->self()->getUnits());
+
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+        if (unit->getType() == BWAPI::UnitTypes::Terran_Barracks && !unit->isTraining() && BWAPI::Broodwar->self()->minerals() >= 50) {
+            unit->train(BWAPI::UnitTypes::Terran_Marine);
         }
     }
 
