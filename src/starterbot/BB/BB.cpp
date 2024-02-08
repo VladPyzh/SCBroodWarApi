@@ -22,3 +22,25 @@ void BlackBoard::update_blocked_money() {
         }
     }
 }
+
+int BlackBoard::get_marine_captain()
+{
+    return marine_captain;
+}
+
+BlackBoard::BlackBoard() {
+
+}
+
+void BlackBoard::update_marine_captain()
+{
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
+    {
+        if (unit->getType() == BWAPI::UnitTypes::Terran_Marine && !unit->isTraining())
+        {
+            marine_captain = unit->getID();
+            return;
+        }
+    }
+    marine_captain = -1;
+}

@@ -24,6 +24,10 @@ public:
 
 	void buildMarrines();
 
+	void move2Cap();
+
+	void auto_attack();
+
     // functions that are triggered by various BWAPI events from main.cpp
 	void onStart();
 	void onFrame();

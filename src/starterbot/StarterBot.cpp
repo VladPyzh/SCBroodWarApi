@@ -12,7 +12,7 @@ StarterBot::StarterBot()
 void StarterBot::onStart()
 {
     // Set our BWAPI options here    
-	BWAPI::Broodwar->setLocalSpeed(2);
+	BWAPI::Broodwar->setLocalSpeed(4);
     BWAPI::Broodwar->setFrameSkip(0);
     
     // Enable the flag that tells BWAPI top let users enter input while bot plays
@@ -40,10 +40,16 @@ void StarterBot::onFrame()
 
     // Build more supply if we are going to run out soon
     buildAdditionalSupply();
+    blackBoard.update_blocked_money();
+
 
     buildBarracks(); //???
+    blackBoard.update_blocked_money();
 
-    blackBoard.update_baracks();
+    blackBoard.update_marine_captain();
+    move2Cap();
+
+    auto_attack();
 
     // Draw unit health bars, which brood war unfortunately does not do
     Tools::DrawUnitHealthBars();
@@ -76,7 +82,7 @@ void StarterBot::sendIdleWorkersToMinerals()
 void StarterBot::trainAdditionalWorkers()
 {
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
-    const int workersWanted = 60;
+    const int workersWanted = 20;
     const int workersOwned = Tools::CountUnitsOfType(workerType, BWAPI::Broodwar->self()->getUnits());
     if (workersOwned < workersWanted)
     {
@@ -92,19 +98,27 @@ void StarterBot::trainAdditionalWorkers()
 // Build more supply if we are going to run out soon
 void StarterBot::buildAdditionalSupply()
 {
+    BWAPI::UnitType barracksType = BWAPI::UnitTypes::Terran_Barracks;
+    const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
+
+
     // Get the amount of supply supply we currently have unused
-    const int unusedSupply = Tools::GetTotalSupply(true) - BWAPI::Broodwar->self()->supplyUsed();
+    const int unusedSupply = Tools::GetTotalSupply(barracksOwned < 2) - BWAPI::Broodwar->self()->supplyUsed();
 
     // If we have a sufficient amount of supply, we don't need to do anything
-    if (unusedSupply >= 3) { return; }
+    if (unusedSupply >= 3 + barracksOwned * 2) { return; }
 
     // Otherwise, we are going to build a supply provider
     const BWAPI::UnitType supplyProviderType = BWAPI::Broodwar->self()->getRace().getSupplyProvider();
 
-    const bool startedBuilding = Tools::BuildBuilding(supplyProviderType);
-    if (startedBuilding)
-    {
-        BWAPI::Broodwar->printf("Started Building %s", supplyProviderType.getName().c_str());
+    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.get_blocked_minerals();
+
+    if (supplyProviderType.mineralPrice() <= minerals) {
+        const bool startedBuilding = Tools::BuildBuilding(supplyProviderType);
+        if (startedBuilding)
+        {
+            BWAPI::Broodwar->printf("Started Building %s", supplyProviderType.getName().c_str());
+        }
     }
 }
 
@@ -112,11 +126,11 @@ void StarterBot::buildBarracks() {
     BWAPI::UnitType barracksType = BWAPI::UnitTypes::Terran_Barracks;
     const int price = barracksType.mineralPrice();
 
-    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.minerals_blocked;
+    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.get_blocked_minerals();
 
     const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
 
-    if ((price <= minerals) && (barracksOwned < 3)){
+    if ((price <= minerals) && (barracksOwned < 4)){
         const bool startedBuilding = Tools::BuildBuilding(barracksType);
         if (startedBuilding)
         {
@@ -140,6 +154,55 @@ void StarterBot::buildMarrines() {
         }
     }
 
+}
+
+void StarterBot::move2Cap()
+{
+    int targetUnit = blackBoard.get_marine_captain();
+    if (targetUnit == -1) {
+        return; 
+    }
+
+    BWAPI::Unit target;
+    for (auto& unit : BWAPI::Broodwar->getAllUnits()) {
+        if (unit->getID() == targetUnit && unit->getType() == BWAPI::UnitTypes::Terran_Marine) {
+            target = unit; // Return the matching unit pointer
+        }
+    }
+
+
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+        if (unit->getType() == BWAPI::UnitTypes::Terran_Marine && !unit->isTraining() && unit != target) {
+            // Command the unit to move to the marine captain's position
+            unit->move(target->getPosition());
+        }
+    }
+
+}
+
+void StarterBot::auto_attack() {
+    for (auto& myUnit : BWAPI::Broodwar->self()->getUnits()) {
+        // Skip the unit if it's not a military unit or it's unable to attack
+        if (!myUnit->getType().canAttack() || !myUnit->isCompleted() || myUnit->isIdle() == false || myUnit->getType() == BWAPI::UnitTypes::Terran_SCV) {
+            continue;
+        }
+
+        // Find the closest visible enemy unit
+        BWAPI::Unit closestEnemy = nullptr;
+        for (auto& enemyUnit : BWAPI::Broodwar->enemy()->getUnits()) {
+            // Check if the enemy unit is visible
+            if (enemyUnit->isVisible()) {
+                if (closestEnemy == nullptr || myUnit->getDistance(enemyUnit) < myUnit->getDistance(closestEnemy)) {
+                    closestEnemy = enemyUnit;
+                }
+            }
+        }
+
+        // If a visible enemy unit is found, command our unit to attack it
+        if (closestEnemy != nullptr) {
+            myUnit->attack(closestEnemy);
+        }
+    }
 }
 
 // Draw some relevent information to the screen to help us debug the bot
