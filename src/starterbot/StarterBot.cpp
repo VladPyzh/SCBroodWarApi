@@ -28,6 +28,7 @@ void StarterBot::onFrame()
     // Update our MapTools information
     m_mapTools.onFrame();
 
+    blackBoard.update_blocked_money();
     // Send our idle workers to mine minerals so they don't just stand there
 
     buildMarrines();
@@ -111,7 +112,7 @@ void StarterBot::buildBarracks() {
     BWAPI::UnitType barracksType = BWAPI::UnitTypes::Terran_Barracks;
     const int price = barracksType.mineralPrice();
 
-    const int minerals = BWAPI::Broodwar->self()->minerals();
+    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.minerals_blocked;
 
     const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
 

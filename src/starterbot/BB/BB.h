@@ -4,12 +4,14 @@
 
 class BlackBoard
 {
-	int number_of_workers;
-	int number_of_baracks;
+	int running_workers;
+
 
 public:
+	int minerals_blocked;
+	int gas_blocked;
 	
 	void update_baracks();
-
-	
+	void add_running_worker();
+	void update_blocked_money();
 };
