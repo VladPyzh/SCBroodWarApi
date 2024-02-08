@@ -1,12 +1,14 @@
 #pragma once
 
 #include "MapTools.h"
+#include "BB/BB.h"
 
 #include <BWAPI.h>
 
 class StarterBot
 {
     MapTools m_mapTools;
+	BlackBoard blackBoard;
 
 public:
 

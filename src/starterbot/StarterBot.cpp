@@ -2,9 +2,10 @@
 #include "Tools.h"
 #include "MapTools.h"
 
+
 StarterBot::StarterBot()
 {
-    
+
 }
 
 // Called when the bot starts!
@@ -40,6 +41,8 @@ void StarterBot::onFrame()
     buildAdditionalSupply();
 
     buildBarracks(); //???
+
+    blackBoard.update_baracks();
 
     // Draw unit health bars, which brood war unfortunately does not do
     Tools::DrawUnitHealthBars();
