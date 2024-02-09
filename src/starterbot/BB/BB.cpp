@@ -1,46 +1,115 @@
 #include "BB.h"
 
 
-void BlackBoard::update_baracks() {
-	// BWAPI::Broodwar->printf("Updated barracks");
-}
-
-void BlackBoard::add_running_worker() {
-	// BWAPI::Broodwar->printf("Added running worker");
-}
-
-void BlackBoard::update_blocked_money() {
-    minerals_blocked = 0;
-    gas_blocked = 0;
-    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
-    {
-        if (unit->getType().isWorker() && unit->isMoving() && unit->isConstructing())
-        {
-            BWAPI::UnitType buildingType = unit->getBuildType();
-            minerals_blocked += buildingType.mineralPrice();
-            gas_blocked += buildingType.gasPrice();
-        }
-    }
-}
-
-int BlackBoard::get_marine_captain()
-{
-    return marine_captain;
-}
-
 BlackBoard::BlackBoard() {
 
 }
 
-void BlackBoard::update_marine_captain()
+int BlackBoard::getNumberOfWorkers() // be aware we count only known workers
 {
-    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
-    {
-        if (unit->getType() == BWAPI::UnitTypes::Terran_Marine && !unit->isTraining())
-        {
-            marine_captain = unit->getID();
-            return;
-        }
-    }
-    marine_captain = -1;
+	int count = 0;
+	for (int i = 0; i < workers.size(); ++i) {
+		if (workers[i] != WorkersAssigment::UNKNOWN) {
+			++count;
+		}
+	}
+	return count;
+}
+
+bool BlackBoard::isWorker(BWAPI::Unit unit)
+{
+	for (int i = 0; i < worker_ids.size(); ++i) {
+		if (worker_ids[i] == unit->getID()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void BlackBoard::addPlanningBuilding(BWAPI::UnitType supplyType, int builder) {
+	planning.push_back({ supplyType, builder });
+}
+
+void BlackBoard::addBuildingBuilding(BWAPI::Unit unitToBuild, int builder) {
+	building.push_back({ unitToBuild, builder });
+}
+
+bool BlackBoard::needSupply() {
+	const int current_available_supply = BWAPI::Broodwar->self()->supplyTotal();
+	int building_supply = 0;
+	for (int i = 0; i < building.size(); ++i) {
+		building_supply += building[i].first->getType().supplyProvided();
+	}
+	int planning_supply = 0;
+	for (int i = 0; i < planning.size(); ++i) {
+		planning_supply += planning[i].first.supplyProvided();
+	}
+
+	if ((current_available_supply + building_supply + planning_supply - BWAPI::Broodwar->self()->supplyUsed() < 3) && (BWAPI::Broodwar->self()->minerals() > 100)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void BlackBoard::addUnit(BWAPI::Unit unit) {
+	BWAPI::UnitType type = unit->getType();
+	if (type.isWorker()) {
+		workers.push_back(WorkersAssigment::CREATING);
+		worker_ids.push_back(unit->getID());
+	}
+	else {
+		BWAPI::Broodwar->printf("Added %s unit type", unit->getType().getName());
+	}
+}
+
+BWAPI::Unit BlackBoard::getWorkerById(int id) {
+	for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+		if (unit->getType().isWorker() && unit->getID() == id)
+		{
+			return unit;
+		}
+	}
+	return nullptr;
+}
+
+BWAPI::Unit BlackBoard::getIdleWorker()
+{
+	for (int i = 0; i < workers.size(); ++i) {
+		if (workers[i] == WorkersAssigment::IDLE) {
+			return getWorkerById(worker_ids[i]);
+		}
+	}
+	return nullptr;
+}
+
+BWAPI::Unit BlackBoard::getCargoWorker()
+{
+	for (int i = 0; i < workers.size(); ++i) {
+		if (workers[i] == WorkersAssigment::RETURNING_CARGO) {
+			return getWorkerById(worker_ids[i]);
+		}
+	}
+	return nullptr;
+}
+
+BWAPI::Unit BlackBoard::getWorkerForBuilding()
+{
+	for (int i = 0; i < workers.size(); ++i) {
+		if (workers[i] == WorkersAssigment::MINNING) {
+			return getWorkerById(worker_ids[i]);
+		}
+	}
+	return nullptr;
+}
+
+void BlackBoard::updateWorker(int worker_id, WorkersAssigment assigment) {
+	std::cout << "SCV " << worker_id << " changed to " << assigment << std::endl;
+	for (int i = 0; i < worker_ids.size(); ++i) {
+		if (worker_ids[i] == worker_id) {
+			workers[i] = assigment;
+			break;
+		}
+	}
 }

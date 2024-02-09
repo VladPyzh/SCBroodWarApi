@@ -1,7 +1,7 @@
 #include "StarterBot.h"
 #include "Tools.h"
 #include "MapTools.h"
-
+#include "BB/BB.h"
 
 StarterBot::StarterBot()
 {
@@ -12,7 +12,7 @@ StarterBot::StarterBot()
 void StarterBot::onStart()
 {
     // Set our BWAPI options here    
-	BWAPI::Broodwar->setLocalSpeed(4);
+	BWAPI::Broodwar->setLocalSpeed(10);
     BWAPI::Broodwar->setFrameSkip(0);
     
     // Enable the flag that tells BWAPI top let users enter input while bot plays
@@ -28,10 +28,8 @@ void StarterBot::onFrame()
     // Update our MapTools information
     m_mapTools.onFrame();
 
-    blackBoard.update_blocked_money();
     // Send our idle workers to mine minerals so they don't just stand there
-
-    buildMarrines();
+    updateReturningCargo();
 
     sendIdleWorkersToMinerals();
 
@@ -39,17 +37,9 @@ void StarterBot::onFrame()
     trainAdditionalWorkers();
 
     // Build more supply if we are going to run out soon
-    buildAdditionalSupply();
-    blackBoard.update_blocked_money();
-
-
-    buildBarracks(); //???
-    blackBoard.update_blocked_money();
-
-    blackBoard.update_marine_captain();
-    move2Cap();
-
-    auto_attack();
+    if (blackBoard.needSupply()) {
+        buildAdditionalSupply();
+    }
 
     // Draw unit health bars, which brood war unfortunately does not do
     Tools::DrawUnitHealthBars();
@@ -58,22 +48,53 @@ void StarterBot::onFrame()
     drawDebugInformation();
 }
 
+void StarterBot::updateReturningCargo() {
+    while (true) {
+        BWAPI::Unit worker = blackBoard.getCargoWorker();
+        if (worker == nullptr || worker->isCarryingMinerals()) {
+            return;
+        }
+        else {
+            if (worker->isIdle()) {
+                blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
+            }
+        }
+    }
+}
+
 // Send our idle workers to mine minerals so they don't just stand there
 void StarterBot::sendIdleWorkersToMinerals()
 {
-    // Let's send all of our starting workers to the closest mineral to them
-    // First we need to loop over all of the units that we (BWAPI::Broodwar->self()) own
-    const BWAPI::Unitset& myUnits = BWAPI::Broodwar->self()->getUnits();
-    for (auto& unit : myUnits)
-    {
-        // Check the unit type, if it is an idle worker, then we want to send it somewhere
-        if (unit->getType().isWorker() && unit->isIdle())
-        {
-            // Get the closest mineral to this worker unit
-            BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
+    while (true) {
+        BWAPI::Unit worker = blackBoard.getIdleWorker();
+        if (worker == nullptr) {
+            return;
+        } else {
+            if (worker->isCarryingMinerals()) {
+                worker->returnCargo();
+                blackBoard.updateWorker(worker->getID(), WorkersAssigment::RETURNING_CARGO);
+                continue;
+            }
+            blackBoard.updateWorker(worker->getID(), WorkersAssigment::MINNING);
+            BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(worker, BWAPI::Broodwar->getMinerals());
+            if (closestMineral) { 
+                std::cout << worker->getID() << std::endl;
+                std::cout << "CLICKED" << std::endl;
+                bool success = worker->gather(closestMineral); 
+                std::cout << "command finished succesful " << success << std::endl;
+                //if (!success) {
+                //    blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
+                //}
+                std::cout << "is idle " << worker->isIdle() << std::endl;
+                std::cout << "is constructing " << worker->isConstructing() << std::endl;
+                std::cout << "is moving " << worker->isMoving() << std::endl; // bug ???
+                std::cout << "is gathering " << worker->isGatheringMinerals() << std::endl; // bug ???
 
-            // If a valid mineral was found, right click it with the unit in order to start harvesting
-            if (closestMineral) { unit->rightClick(closestMineral); }
+
+            }
+            else {
+                std::cout << "ALARM NO MINERALS" << std::endl;
+            }
         }
     }
 }
@@ -81,16 +102,14 @@ void StarterBot::sendIdleWorkersToMinerals()
 // Train more workers so we can gather more income
 void StarterBot::trainAdditionalWorkers()
 {
+    const int number_of_workers = blackBoard.getNumberOfWorkers();
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
-    const int workersWanted = 20;
-    const int workersOwned = Tools::CountUnitsOfType(workerType, BWAPI::Broodwar->self()->getUnits());
-    if (workersOwned < workersWanted)
-    {
-        // get the unit pointer to my depot
-        const BWAPI::Unit myDepot = Tools::GetDepot();
 
-        // if we have a valid depot unit and it's currently not training something, train a worker
-        // there is no reason for a bot to ever use the unit queueing system, it just wastes resources
+    const int workersWanted = 20;
+    if (number_of_workers < workersWanted)
+    {
+        const BWAPI::Unit myDepot = Tools::GetDepot(); // TODO CHANGE TO BLACKBOARD
+
         if (myDepot && !myDepot->isTraining()) { myDepot->train(workerType); }
     }
 }
@@ -98,112 +117,23 @@ void StarterBot::trainAdditionalWorkers()
 // Build more supply if we are going to run out soon
 void StarterBot::buildAdditionalSupply()
 {
-    BWAPI::UnitType barracksType = BWAPI::UnitTypes::Terran_Barracks;
-    const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
+    std::cout << "CALL BUILD SUPPLY" << std::endl;
+    BWAPI::Unit builder = blackBoard.getWorkerForBuilding();
+    if (builder == nullptr) {
+        return;
+    }
 
+    const BWAPI::UnitType supplyType = BWAPI::UnitTypes::Terran_Supply_Depot;
 
-    // Get the amount of supply supply we currently have unused
-    const int unusedSupply = Tools::GetTotalSupply(barracksOwned < 2) - BWAPI::Broodwar->self()->supplyUsed();
+    const bool startedBuilding = Tools::BuildBuilding(supplyType);
+    if (startedBuilding) {
+            BWAPI::Broodwar->printf("Started Building %s", supplyType.getName().c_str());
 
-    // If we have a sufficient amount of supply, we don't need to do anything
-    if (unusedSupply >= 3 + barracksOwned * 2) { return; }
-
-    // Otherwise, we are going to build a supply provider
-    const BWAPI::UnitType supplyProviderType = BWAPI::Broodwar->self()->getRace().getSupplyProvider();
-
-    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.get_blocked_minerals();
-
-    if (supplyProviderType.mineralPrice() <= minerals) {
-        const bool startedBuilding = Tools::BuildBuilding(supplyProviderType);
-        if (startedBuilding)
-        {
-            BWAPI::Broodwar->printf("Started Building %s", supplyProviderType.getName().c_str());
-        }
+            blackBoard.addPlanningBuilding(supplyType, builder->getID());
+            blackBoard.updateWorker(builder->getID(), WorkersAssigment::GOING_TO_BUILDING);
     }
 }
 
-void StarterBot::buildBarracks() {
-    BWAPI::UnitType barracksType = BWAPI::UnitTypes::Terran_Barracks;
-    const int price = barracksType.mineralPrice();
-
-    const int minerals = BWAPI::Broodwar->self()->minerals() - blackBoard.get_blocked_minerals();
-
-    const int barracksOwned = Tools::CountUnitsOfType(barracksType, BWAPI::Broodwar->self()->getUnits());
-
-    if ((price <= minerals) && (barracksOwned < 4)){
-        const bool startedBuilding = Tools::BuildBuilding(barracksType);
-        if (startedBuilding)
-        {
-            BWAPI::Broodwar->printf("Started Building %s", barracksType.getName().c_str());
-        }
-    }
-
-}
-
-void StarterBot::buildMarrines() {
-    BWAPI::UnitType marineType = BWAPI::UnitTypes::Terran_Marine;
-    const int price = marineType.mineralPrice();
-
-    const int minerals = BWAPI::Broodwar->self()->minerals();
-
-    const int barracksOwned = Tools::CountUnitsOfType(marineType, BWAPI::Broodwar->self()->getUnits());
-
-    for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
-        if (unit->getType() == BWAPI::UnitTypes::Terran_Barracks && !unit->isTraining() && BWAPI::Broodwar->self()->minerals() >= 50) {
-            unit->train(BWAPI::UnitTypes::Terran_Marine);
-        }
-    }
-
-}
-
-void StarterBot::move2Cap()
-{
-    int targetUnit = blackBoard.get_marine_captain();
-    if (targetUnit == -1) {
-        return; 
-    }
-
-    BWAPI::Unit target;
-    for (auto& unit : BWAPI::Broodwar->getAllUnits()) {
-        if (unit->getID() == targetUnit && unit->getType() == BWAPI::UnitTypes::Terran_Marine) {
-            target = unit; // Return the matching unit pointer
-        }
-    }
-
-
-    for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
-        if (unit->getType() == BWAPI::UnitTypes::Terran_Marine && !unit->isTraining() && unit != target) {
-            // Command the unit to move to the marine captain's position
-            unit->move(target->getPosition());
-        }
-    }
-
-}
-
-void StarterBot::auto_attack() {
-    for (auto& myUnit : BWAPI::Broodwar->self()->getUnits()) {
-        // Skip the unit if it's not a military unit or it's unable to attack
-        if (!myUnit->getType().canAttack() || !myUnit->isCompleted() || myUnit->isIdle() == false || myUnit->getType() == BWAPI::UnitTypes::Terran_SCV) {
-            continue;
-        }
-
-        // Find the closest visible enemy unit
-        BWAPI::Unit closestEnemy = nullptr;
-        for (auto& enemyUnit : BWAPI::Broodwar->enemy()->getUnits()) {
-            // Check if the enemy unit is visible
-            if (enemyUnit->isVisible()) {
-                if (closestEnemy == nullptr || myUnit->getDistance(enemyUnit) < myUnit->getDistance(closestEnemy)) {
-                    closestEnemy = enemyUnit;
-                }
-            }
-        }
-
-        // If a visible enemy unit is found, command our unit to attack it
-        if (closestEnemy != nullptr) {
-            myUnit->attack(closestEnemy);
-        }
-    }
-}
 
 // Draw some relevent information to the screen to help us debug the bot
 void StarterBot::drawDebugInformation()
@@ -246,13 +176,48 @@ void StarterBot::onSendText(std::string text)
 // so this will trigger when you issue the build command for most units
 void StarterBot::onUnitCreate(BWAPI::Unit unit)
 { 
-	
+    if (unit->getType().isWorker()) {
+        blackBoard.addUnit(unit);
+    }
+    else if (unit->getType().isBuilding()) {
+        BWAPI::Position building_pos = unit->getPosition();
+        for (int i = 0; i < blackBoard.workers.size(); ++i) {
+            if (blackBoard.workers[i] == WorkersAssigment::GOING_TO_BUILDING) {
+                std::cout << "We change status for unit who was going to building" << std::endl;
+                BWAPI::Unit worker = blackBoard.getWorkerById(blackBoard.worker_ids[i]);
+                BWAPI::Position worker_pos = worker->getPosition();
+                
+
+                // if (abs(worker_pos.x - building_pos.x) + abs(worker_pos.y - building_pos.y) < 6) { TODO
+                blackBoard.updateWorker(worker->getID(), WorkersAssigment::BUILDING);
+                std::cout << "we started to build " << unit->getID() << std::endl;
+                blackBoard.addBuildingBuilding(unit, worker->getID());
+                std::cout << "builder id " << worker->getID() << std::endl;
+                //}
+            }
+        }
+    }
 }
 
 // Called whenever a unit finished construction, with a pointer to the unit
 void StarterBot::onUnitComplete(BWAPI::Unit unit)
 {
-	
+    if (blackBoard.isWorker(unit)) {
+        blackBoard.updateWorker(unit->getID(), WorkersAssigment::IDLE);
+    }
+    else if (unit->getType().isBuilding()) {
+        std::cout << "supply completed " << std::endl;
+        int current_id = unit->getID();
+        std::cout << "building id " << unit->getID() << std::endl;
+        for (int i = 0; i < blackBoard.building.size(); ++i) {
+            std::cout << "id of building " << blackBoard.building[i].first->getID()  << std::endl;
+            if (blackBoard.building[i].first->getID() == current_id) {
+                std::cout << "we updated worker " << blackBoard.building[i].second << std::endl;
+                blackBoard.updateWorker(blackBoard.building[i].second, WorkersAssigment::IDLE);
+
+            }
+        }
+    }
 }
 
 // Called whenever a unit appears, with a pointer to the destroyed unit

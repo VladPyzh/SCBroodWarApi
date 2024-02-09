@@ -20,17 +20,10 @@ public:
     void buildAdditionalSupply();
     void drawDebugInformation();
 
-	void buildBarracks();
-
-	void buildMarrines();
-
-	void move2Cap();
-
-	void auto_attack();
-
     // functions that are triggered by various BWAPI events from main.cpp
 	void onStart();
 	void onFrame();
+	void updateReturningCargo();
 	void onEnd(bool isWinner);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);

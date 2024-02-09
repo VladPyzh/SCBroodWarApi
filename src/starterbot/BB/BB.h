@@ -2,22 +2,40 @@
 
 #include <BWAPI.h>
 
+enum WorkersAssigment {
+	UNKNOWN, // consider dead or didn't created
+	CREATING,
+	IDLE,
+	MINNING,
+	GOING_TO_BUILDING,
+	BUILDING,
+	HIDDING,
+	RETURNING_CARGO
+};
+
 class BlackBoard
 {
-	int running_workers;
-	int minerals_blocked;
-	int gas_blocked;
-
-	int marine_captain = -1;
-
 public:
 
-	BlackBoard();
-	int get_blocked_minerals() { return minerals_blocked; }
-	int get_marine_captain();
+	std::vector<WorkersAssigment> workers;
+	std::vector<int> worker_ids;
 
-	void update_marine_captain();
-	void update_baracks();
-	void add_running_worker();
-	void update_blocked_money();
+	std::vector<std::pair<BWAPI::UnitType, int>> planning; // type of building, who is building
+	std::vector<std::pair<BWAPI::Unit, int>> building; // type of building, who is building
+
+
+	BlackBoard();
+
+	int getNumberOfWorkers();
+	bool isWorker(BWAPI::Unit unit);
+	void addPlanningBuilding(BWAPI::UnitType supplyType, int builder);
+	void addBuildingBuilding(BWAPI::Unit unitToBuild, int builder);
+	bool needSupply();
+	void addUnit(BWAPI::Unit unit);
+	BWAPI::Unit getWorkerById(int id);
+	BWAPI::Unit getIdleWorker();
+	BWAPI::Unit getCargoWorker();
+	BWAPI::Unit getWorkerForBuilding();
+	void updateWorker(int worker_id, WorkersAssigment assigment);
+
 };
