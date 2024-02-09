@@ -1,7 +1,9 @@
 visualstudio/x64
 visualstudio/Win32
 visualstudio/.vs
-starcraft/bwapi-data/*
+starcraft/bwapi-data/data
+starcraft/bwapi-data/BWAPI.dll
+starcraft/bwapi-data/BWAPId.dll
 starcraft/characters/*
 starcraft/maps/*
 starcraft/*.exe
