@@ -26,6 +26,8 @@ public:
 
 	BlackBoard();
 
+	void print();
+
 	int getNumberOfWorkers();
 	bool isWorker(BWAPI::Unit unit);
 	void addPlanningBuilding(BWAPI::UnitType supplyType, int builder);

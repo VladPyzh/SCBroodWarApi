@@ -9,6 +9,7 @@ class StarterBot
 {
     MapTools m_mapTools;
 	BlackBoard blackBoard;
+	bool print = true;
 
 public:
 
@@ -23,6 +24,7 @@ public:
     // functions that are triggered by various BWAPI events from main.cpp
 	void onStart();
 	void onFrame();
+	void onMenuFrame();
 	void updateReturningCargo();
 	void onEnd(bool isWinner);
 	void onUnitDestroy(BWAPI::Unit unit);

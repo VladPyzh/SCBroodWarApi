@@ -22,12 +22,20 @@ void StarterBot::onStart()
     m_mapTools.onStart();
 }
 
+void StarterBot::onMenuFrame()
+{
+    print = false;
+}
+
 // Called on each frame of the game
 void StarterBot::onFrame()
 {
     // Update our MapTools information
     m_mapTools.onFrame();
 
+    if (print) {
+        blackBoard.print();
+    }
     // Send our idle workers to mine minerals so they don't just stand there
     updateReturningCargo();
 
@@ -49,53 +57,53 @@ void StarterBot::onFrame()
 }
 
 void StarterBot::updateReturningCargo() {
-    while (true) {
-        BWAPI::Unit worker = blackBoard.getCargoWorker();
-        if (worker == nullptr || worker->isCarryingMinerals()) {
-            return;
-        }
-        else {
-            if (worker->isIdle()) {
-                blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
-            }
-        }
+    BWAPI::Unit worker = blackBoard.getCargoWorker();
+    if (worker == nullptr || worker->isCarryingMinerals()) {
+        return;
+    }
+    else {
+        blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
     }
 }
 
 // Send our idle workers to mine minerals so they don't just stand there
 void StarterBot::sendIdleWorkersToMinerals()
 {
-    while (true) {
         BWAPI::Unit worker = blackBoard.getIdleWorker();
         if (worker == nullptr) {
             return;
         } else {
             if (worker->isCarryingMinerals()) {
-                worker->returnCargo();
-                blackBoard.updateWorker(worker->getID(), WorkersAssigment::RETURNING_CARGO);
-                continue;
+                if (worker->returnCargo()) {
+                    blackBoard.updateWorker(worker->getID(), WorkersAssigment::RETURNING_CARGO);
+                }
+                return;
             }
-            blackBoard.updateWorker(worker->getID(), WorkersAssigment::MINNING);
             BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(worker, BWAPI::Broodwar->getMinerals());
             if (closestMineral) { 
-                std::cout << worker->getID() << std::endl;
-                std::cout << "CLICKED" << std::endl;
+                // std::cout << "CLICKED" << std::endl;
                 bool success = worker->gather(closestMineral); 
-                std::cout << "command finished succesful " << success << std::endl;
+                if (success) {
+                    std::cout << worker->getID() << std::endl;
+                    std::cout << closestMineral->getID() << std::endl;
+                    blackBoard.updateWorker(worker->getID(), WorkersAssigment::MINNING);
+                } else {
+                   blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
+                }
+                // std::cout << "command finished succesful " << success << std::endl;
                 //if (!success) {
                 //    blackBoard.updateWorker(worker->getID(), WorkersAssigment::IDLE);
                 //}
-                std::cout << "is idle " << worker->isIdle() << std::endl;
-                std::cout << "is constructing " << worker->isConstructing() << std::endl;
-                std::cout << "is moving " << worker->isMoving() << std::endl; // bug ???
-                std::cout << "is gathering " << worker->isGatheringMinerals() << std::endl; // bug ???
+                // std::cout << "is idle " << worker->isIdle() << std::endl;
+                // std::cout << "is constructing " << worker->isConstructing() << std::endl;
+                // std::cout << "is moving " << worker->isMoving() << std::endl; // bug ???
+                // std::cout << "is gathering " << worker->isGatheringMinerals() << std::endl; // bug ???
 
 
             }
             else {
                 std::cout << "ALARM NO MINERALS" << std::endl;
             }
-        }
     }
 }
 
@@ -105,13 +113,9 @@ void StarterBot::trainAdditionalWorkers()
     const int number_of_workers = blackBoard.getNumberOfWorkers();
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
 
-    const int workersWanted = 20;
-    if (number_of_workers < workersWanted)
-    {
-        const BWAPI::Unit myDepot = Tools::GetDepot(); // TODO CHANGE TO BLACKBOARD
+    const BWAPI::Unit myDepot = Tools::GetDepot(); // TODO CHANGE TO BLACKBOARD
 
-        if (myDepot && !myDepot->isTraining()) { myDepot->train(workerType); }
-    }
+    if (myDepot && !myDepot->isTraining()) { myDepot->train(workerType); }
 }
 
 // Build more supply if we are going to run out soon
@@ -120,6 +124,7 @@ void StarterBot::buildAdditionalSupply()
     std::cout << "CALL BUILD SUPPLY" << std::endl;
     BWAPI::Unit builder = blackBoard.getWorkerForBuilding();
     if (builder == nullptr) {
+        std::cout << "no onit found\n";
         return;
     }
 
@@ -209,13 +214,17 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
         std::cout << "supply completed " << std::endl;
         int current_id = unit->getID();
         std::cout << "building id " << unit->getID() << std::endl;
+        int idx = -1;
         for (int i = 0; i < blackBoard.building.size(); ++i) {
             std::cout << "id of building " << blackBoard.building[i].first->getID()  << std::endl;
             if (blackBoard.building[i].first->getID() == current_id) {
+                idx = i;
                 std::cout << "we updated worker " << blackBoard.building[i].second << std::endl;
                 blackBoard.updateWorker(blackBoard.building[i].second, WorkersAssigment::IDLE);
-
             }
+        }
+        if (idx != -1) {
+            blackBoard.building.erase(blackBoard.building.begin() + idx);
         }
     }
 }

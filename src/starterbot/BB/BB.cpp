@@ -1,8 +1,18 @@
 #include "BB.h"
-
+#include <iostream>
 
 BlackBoard::BlackBoard() {
 
+}
+
+void BlackBoard::print() {
+  // std::cout << "===\n";
+  std::cout << "Blackboard(";
+  for (int i = 0; i < workers.size(); i++) {
+  	if (workers[i] != WorkersAssigment::MINNING)
+	    std::cout << '\t' << worker_ids[i] << ' ' << workers[i];
+  }
+  std::cout << ")\r";
 }
 
 int BlackBoard::getNumberOfWorkers() // be aware we count only known workers
@@ -31,6 +41,16 @@ void BlackBoard::addPlanningBuilding(BWAPI::UnitType supplyType, int builder) {
 }
 
 void BlackBoard::addBuildingBuilding(BWAPI::Unit unitToBuild, int builder) {
+	int idx = -1;
+	for (int i = 0; i < planning.size(); i++) {
+		if (planning[i].second == builder) {
+			idx = i;
+			break;
+		}
+	}
+	if (idx != -1) {
+		planning.erase(planning.begin() + idx);
+	}
 	building.push_back({ unitToBuild, builder });
 }
 
