@@ -6,15 +6,15 @@ class EventListener() {
 		BWAPI::UnitType type = unit->getType();
 		switch (type) {
 			case BWAPI::UnitType::SUPPLY: {
-				bb.m_supplies.push_back(Supply{unit, UNKNOWN});
+				bb.m_supplies.push_back(Supply{unit, SupplyStates::UNKNOWN});
 				break;
 			}
 			case BWAPI::UnitType::WORKER: {
-				bb.m_workers.push_back(Worker{unit, UNKNOWN});
+				bb.m_workers.push_back(Worker{unit, WorkerStates::UNKNOWN});
 				break;
 			}
 			case BWAPI::UnitType::DEPOT: {
-				bb.m_depots.push_back(Depot{unit, UNKNOWN});
+				bb.m_depots.push_back(Depot{unit, DepotStates::UNKNOWN});
 				break;
 			}
 		}

@@ -10,20 +10,20 @@ struct Controller {
         if (closestMineral) { 
             bool success = worker.unit->gather(closestMineral); 
             if (success) {
-                worker.changeState(MINING);
+                worker.changeState(WorkerStates::MINING);
             }
         }
     }
 
     void returnCargo(Worker worker) {
         if (worker->returnCargo()) {
-            worker.changeState(RETURNING_CARGO);
+            worker.changeState(WorkerStates::RETURNING_CARGO);
         }
     }
 
     void train(Depot depot, BWAPI::UnitType unitType) {
         if (depot.unit->train(unitType)) {
-            depot.changeState(TRAINING);
+            depot.changeState(DepotStates::TRAINING);
         }
     }
 
@@ -35,7 +35,7 @@ struct Controller {
         int maxBuildRange = 64;
         BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(buildingType, desiredPos, maxBuildRange, false);
         if (worker.unit->build(buildingType, buildPos)) {
-            worker.changeState(GOING_TO_BUILD);
+            worker.changeState(WorkerStates::GOING_TO_BUILD);
         }
     }
 };

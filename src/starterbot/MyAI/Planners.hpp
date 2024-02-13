@@ -46,7 +46,7 @@ struct BuildingBehavior : public Behavior {
         //     controller.build(workers[0], BARRACKS);
         // }
         if (shouldBuildSupplyDepot(bb)) {
-            controller.build(workers[workers.size() - 1], SUPPLY_DEPOT);
+            controller.build(workers[workers.size() - 1], BWAPI::UnitTypes::Terran_Supply_Depot);
         }
     }
 
@@ -69,7 +69,7 @@ struct TrainingBehavior : public Behavior {
     void update(const BlackBoard& bb, Controller& controller) {
         std::vector<Depot> depots = bb.getDepots();
         for (const Depot& depot : depots) {
-            controller.train(depot, WORKER);
+            controller.train(depot, bb.workerType());
         }
         // std::vector<Barrack> barracks = bb.getBarracks();
         // for (const Barrack& barrack : barracks) {
