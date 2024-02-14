@@ -1,4 +1,7 @@
+#pragma once
 
+#include "Units.hpp"
+#include "../Tools.h"
 
 
 
@@ -6,24 +9,24 @@
 struct Controller {
 
     void harvestMinerals(Worker worker) {
-        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(worker, BWAPI::Broodwar->getMinerals());
+        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(worker->unit, BWAPI::Broodwar->getMinerals());
         if (closestMineral) { 
-            bool success = worker.unit->gather(closestMineral); 
+            bool success = worker->unit->gather(closestMineral); 
             if (success) {
-                worker.changeState(WorkerStates::MINING);
+                worker->changeState(WorkerStates::W_MINING);
             }
         }
     }
 
     void returnCargo(Worker worker) {
-        if (worker->returnCargo()) {
-            worker.changeState(WorkerStates::RETURNING_CARGO);
+        if (worker->unit->returnCargo()) {
+            worker->changeState(WorkerStates::W_RETURNING_CARGO);
         }
     }
 
     void train(Depot depot, BWAPI::UnitType unitType) {
-        if (depot.unit->train(unitType)) {
-            depot.changeState(DepotStates::TRAINING);
+        if (depot->unit->train(unitType)) {
+            depot->changeState(DepotStates::D_TRAINING);
         }
     }
 
@@ -34,8 +37,8 @@ struct Controller {
         // Ask BWAPI for a building location near the desired position for the type
         int maxBuildRange = 64;
         BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(buildingType, desiredPos, maxBuildRange, false);
-        if (worker.unit->build(buildingType, buildPos)) {
-            worker.changeState(WorkerStates::GOING_TO_BUILD);
+        if (worker->unit->build(buildingType, buildPos)) {
+            worker->changeState(WorkerStates::W_GOING_TO_BUILD);
         }
     }
 };

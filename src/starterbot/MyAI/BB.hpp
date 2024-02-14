@@ -1,45 +1,46 @@
+#pragma once
 
-
-#include "Unit.hpp"
+#include "Units.hpp"
 #include <vector>
+#include <BWAPI.h>
 #include <stdexcept>
 
 
 struct BlackBoard {
     void fetch() {
         for (Worker worker : m_workers) {
-            if (worker.state.inner == WorkerStates::GOING_TO_BUILD)
+            if (worker->state.inner == WorkerStates::W_GOING_TO_BUILD)
                 continue;
-            if (worker.unit->isCreating()) {
-                worker.unit.changeState(WorkerStates::CREATING);
-            } else if (worker.unit->isGathering()) {
-                worker.unit.changeState(WorkerStates::MINING);
-            } else if (worker.unit->isBuilding()) {
-                worker.unit.changeState(WorkerStates::BUILDING);
-            } else if (worker.unit->isCarryingMinerals()) {
-                worker.unit.changeState(WorkerStates::RETURNING_CARGO);
-            } else if (worker.unit->isCompleted()) {
-                worker.unit.changeState(WorkerStates::IDLE);
+            if (worker->unit->isBeingConstructed()) {
+                worker->changeState(WorkerStates::W_CREATING);
+            } else if (worker->unit->isGatheringMinerals()) {
+                worker->changeState(WorkerStates::W_MINING);
+            } else if (worker->unit->isConstructing()) {
+                worker->changeState(WorkerStates::W_BUILDING);
+            } else if (worker->unit->isCarryingMinerals()) {
+                worker->changeState(WorkerStates::W_RETURNING_CARGO);
+            } else if (worker->unit->isCompleted()) {
+                worker->changeState(WorkerStates::W_IDLE);
             } else {
                 throw std::runtime_error("unknown state");
             }
         }
-        for (Depot depot : m_depot) {
-            if (depot.unit->isCreating()) {
-                depot.unit.changeState(DepotStates::CREATING);
-            } else if (depot.unit->isTraining()) {
-                depot.unit.changeState(DepotStates::TRAINING);
-            } else if (depot.unit->isCompleted()) {
-                depot.unit.changeState(DepotStates::IDLE);
+        for (Depot depot : m_depots) {
+            if (depot->unit->isBeingConstructed()) {
+                depot->changeState(DepotStates::D_CREATING);
+            } else if (depot->unit->isTraining()) {
+                depot->changeState(DepotStates::D_TRAINING);
+            } else if (depot->unit->isCompleted()) {
+                depot->changeState(DepotStates::D_IDLE);
             } else {
                 throw std::runtime_error("unknown state");
             }
         }
         for (Supply supply : m_supplies) {
-            if (supply.unit->isCreating()) {
-                supply.unit.changeState(SupplyStates::CREATING);
-            } else if (supply.unit->isCompleted()) {
-                supply.unit.changeState(SupplyStates::IDLE);
+            if (supply->unit->isBeingConstructed()) {
+                supply->changeState(SupplyStates::S_CREATING);
+            } else if (supply->unit->isCompleted()) {
+                supply->changeState(SupplyStates::S_IDLE);
             } else {
                 throw std::runtime_error("unknown state");
             }
@@ -52,7 +53,7 @@ struct BlackBoard {
     int minerals() const {
         int res = m_minerals;
         for (auto type : pending_units) {
-            res -= type.getMineralPrice();
+            res -= type.mineralPrice();
         }
         return res;
     }
@@ -60,13 +61,27 @@ struct BlackBoard {
     int unitSlots() const {
         int res = m_unitSlots;
         for (auto type : pending_units) {
-            res += type.getSupplyProvided();
+            res += type.supplyProvided();
         }
         return res;
     }
 
-    void workerType() const {
+    BWAPI::UnitType workerType() const {
         return BWAPI::Broodwar->self()->getRace().getWorker();
+    }
+
+    std::vector<Worker> getAvailableWorkers() const {
+        std::vector<Worker> res;
+        for (Worker worker : m_workers) {
+            if (worker->state.inner == WorkerStates::W_IDLE) {
+                res.push_back(worker);
+            }
+        }
+        return res;
+    }
+
+    std::vector<Depot> getDepots() const {
+        return m_depots;
     }
 
     std::vector<Worker> m_workers;

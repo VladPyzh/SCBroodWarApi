@@ -1,11 +1,12 @@
 #pragma once
 
 #include "MapTools.h"
-#include "BB/BB.h"
-
+#include "BB.hpp"
+#include "Controller.hpp"
+#include "Planners.hpp"
 #include <BWAPI.h>
 
-class AI
+struct AI
 {
     MapTools m_mapTools;
 	BlackBoard blackBoard;

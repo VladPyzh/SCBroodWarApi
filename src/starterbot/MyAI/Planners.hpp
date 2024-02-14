@@ -2,6 +2,7 @@
 
 #include "BB.hpp"
 #include "Controller.hpp"
+#include "Units.hpp"
 
 #include <vector>
 #include <memory>
@@ -9,23 +10,9 @@
 
 struct Behavior {
     virtual void update(const BlackBoard& bb, Controller& controller) = 0;
+    virtual ~Behavior() {}
 };
 
-struct Planner {
-    Planner() {
-        managers = {
-            std::make_unique<TrainingBehavior>(),
-            std::make_unique<BuildingBehavior>(),
-            std::make_unique<HarvestingBehavior>()
-        };
-    }
-    void update(const BlackBoard& bb, Controller& controller) {
-        for (auto manager : managers) {
-            manager->update(bb, controller);
-        }
-    }
-    std::vector<std::unique_ptr<Behavior>> managers;
-};
 
 struct HarvestingBehavior : public Behavior {
     void update(const BlackBoard& bb, Controller& controller) {
@@ -52,7 +39,7 @@ struct BuildingBehavior : public Behavior {
 
     bool shouldBuildBarracks(const BlackBoard& bb) {
         int minerals = bb.minerals();
-        return minarals >= 200;
+        return minerals >= 200;
     }
 
     bool shouldBuildSupplyDepot(const BlackBoard& bb) {
@@ -61,7 +48,7 @@ struct BuildingBehavior : public Behavior {
 
         // Todo: approximate that in X seconds we will outrun of unit slots
         // based on current unit production speed
-        return minarals >= 100 && unitSlots < 3;
+        return minerals >= 100 && unitSlots < 3;
     }
 };
 
@@ -76,4 +63,20 @@ struct TrainingBehavior : public Behavior {
         //     controller.train(barrack, MARINE);
         // }
     }
-}
+};
+
+
+
+struct Planner {
+    Planner(): managers() {
+        managers.emplace_back(std::make_unique<TrainingBehavior>());
+        managers.emplace_back(std::make_unique<BuildingBehavior>());
+        managers.emplace_back(std::make_unique<HarvestingBehavior>());
+    }
+    void update(const BlackBoard& bb, Controller& controller) {
+        for (const auto& manager : managers) {
+            manager->update(bb, controller);
+        }
+    }
+    std::vector<std::unique_ptr<Behavior>> managers;
+};

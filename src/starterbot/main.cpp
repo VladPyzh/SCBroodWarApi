@@ -1,13 +1,13 @@
 #include <BWAPI.h>
 #include <BWAPI/Client.h>
-#include "StarterBot.h"
+#include "MyAi/Ai.hpp"
+#include "MyAi/EventHandler.hpp"
 #include "ReplayParser.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
-
+#include <stdexcept>
 void PlayGame();
-void ParseReplay();
 
 int main(int argc, char * argv[])
 {
@@ -20,30 +20,35 @@ int main(int argc, char * argv[])
     }
 
     // if we have connected to BWAPI
-    while (BWAPI::BWAPIClient.isConnected())
-    {
-        // the starcraft exe has connected but we need to wait for the game to start
-        std::cout << "Waiting for game start\n";
-        while (BWAPI::BWAPIClient.isConnected() && !BWAPI::Broodwar->isInGame())
+    try {
+        while (BWAPI::BWAPIClient.isConnected())
         {
-            BWAPI::BWAPIClient.update();
-        }
+            // the starcraft exe has connected but we need to wait for the game to start
+            std::cout << "Waiting for game start\n";
+            while (BWAPI::BWAPIClient.isConnected() && !BWAPI::Broodwar->isInGame())
+            {
+                BWAPI::BWAPIClient.update();
+            }
 
-        // Check to see if Starcraft shut down somehow
-        if (BWAPI::BroodwarPtr == nullptr) { break; }
+            // Check to see if Starcraft shut down somehow
+            if (BWAPI::BroodwarPtr == nullptr) { break; }
 
-        // If we are successfully in a game, call the module to play the game
-        if (BWAPI::Broodwar->isInGame())
-        {
-            if (!BWAPI::Broodwar->isReplay()) 
-            { 
-                std::cout << "Something new added" << std::endl;
-                std::cout << "Playing Game " << gameCount++ << " on map " << BWAPI::Broodwar->mapFileName() << "\n";
-                PlayGame(); 
+            // If we are successfully in a game, call the module to play the game
+            if (BWAPI::Broodwar->isInGame())
+            {
+                if (!BWAPI::Broodwar->isReplay()) 
+                { 
+                    std::cout << "Something new added" << std::endl;
+                    std::cout << "Playing Game " << gameCount++ << " on map " << BWAPI::Broodwar->mapFileName() << "\n";
+                    PlayGame(); 
+                }
             }
         }
     }
-
+    catch (const std::runtime_error& e) {
+        std::cout << e.what();
+    }
+    system("pause");
 	return 0;
 }
 

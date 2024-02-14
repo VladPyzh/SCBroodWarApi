@@ -4,16 +4,19 @@
     <ClCompile Include="..\src\starterbot\main.cpp" />
     <ClCompile Include="..\src\starterbot\MapTools.cpp" />
     <ClCompile Include="..\src\starterbot\ReplayParser.cpp" />
-    <ClCompile Include="..\src\starterbot\StarterBot.cpp" />
     <ClCompile Include="..\src\starterbot\Tools.cpp" />
-    <ClCompile Include="..\src\starterbot\BB\BB.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\starterbot\Grid.hpp" />
     <ClInclude Include="..\src\starterbot\MapTools.h" />
     <ClInclude Include="..\src\starterbot\ReplayParser.h" />
-    <ClInclude Include="..\src\starterbot\StarterBot.h" />
     <ClInclude Include="..\src\starterbot\Tools.h" />
-    <ClInclude Include="..\src\starterbot\BB\BB.h" />
+    <ClInclude Include="..\src\starterbot\MyAI\AI.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\BB.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Controller.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\EventHandler.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\FSM.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Planners.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Units.hpp" />
   </ItemGroup>
 </Project>
