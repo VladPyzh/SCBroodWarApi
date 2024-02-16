@@ -87,6 +87,7 @@ struct BlackBoard {
         std::cout << '\n';
 
         m_minerals = BWAPI::Broodwar->self()->minerals();
+        m_gas = BWAPI::Broodwar->self()->gas();
         m_unitSlotsAvailable = BWAPI::Broodwar->self()->supplyTotal();
         m_unitSlotsTaken = BWAPI::Broodwar->self()->supplyUsed();
     }
@@ -95,6 +96,14 @@ struct BlackBoard {
         int res = m_minerals;
         for (auto type : pending_units) {
             res -= type.mineralPrice();
+        }
+        return res;
+    }
+
+    int gas() const {
+        int res = m_gas;
+        for (auto type : pending_units) {
+            res -= type.gasPrice();
         }
         return res;
     }
@@ -138,6 +147,7 @@ struct BlackBoard {
     std::vector<Supply> m_supplies;
     std::vector<BWAPI::UnitType> pending_units;
     int m_minerals;
+    int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
 };

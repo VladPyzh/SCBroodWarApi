@@ -41,9 +41,12 @@ struct BuildingBehavior : public Behavior {
         // if (shouldBuildBarracks(bb)) {
         //     controller.build(workers[0], BARRACKS);
         // }
-        // if (shouldBuildSupplyDepot(bb)) {
-        //     controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot);
-        // }
+        BWAPI::Broodwar->printf("A BIBA");
+
+        if (shouldBuildSupplyDepot(bb)) {
+            BWAPI::Broodwar->printf("B BIBA");
+            controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot);
+        }
     }
 
     bool shouldBuildBarracks(const BlackBoard& bb) {
@@ -57,6 +60,7 @@ struct BuildingBehavior : public Behavior {
 
         // Todo: approximate that in X seconds we will outrun of unit slots
         // based on current unit production speed
+        BWAPI::Broodwar->printf("minerals: %d, unitSlots: %d", minerals, unitSlots);
         return minerals >= BWAPI::UnitTypes::Terran_Supply_Depot.supplyRequired() && unitSlots < 5;
     }
 };
@@ -75,11 +79,55 @@ struct TrainingBehavior : public Behavior {
 };
 
 
+struct BuildOrderBehavior : public Behavior {
+    int cur_build_index = 0;
+    std::vector<BWAPI::UnitType> build_order = {
+      BWAPI::UnitTypes::Terran_Barracks,  // 1. Barracks
+      BWAPI::UnitTypes::Terran_Academy,   // 2. Academy
+      BWAPI::UnitTypes::Terran_Barracks,  // 3. Barracks
+      BWAPI::UnitTypes::Terran_Factory,   // 4. Factory
+    };
+
+    void update(const BlackBoard& bb, Controller& controller) {
+        if (cur_build_index >= build_order.size())
+            return;
+
+        std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
+        std::vector<Worker> addWorkers = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
+
+        workers.insert(workers.end(), addWorkers.begin(), addWorkers.end());
+        
+
+        if (workers.empty()) {
+            return;
+        }
+        const BWAPI::UnitType BuildingType = build_order[cur_build_index];
+
+        int have_minerals = bb.minerals();
+        int have_gas = bb.gas();
+        int cost_mineral = BuildingType.mineralPrice();
+        int cost_gas = BuildingType.gasPrice();
+
+        if (have_minerals < cost_mineral || have_gas < cost_gas) {
+            BWAPI::Broodwar->printf("\tNot enough minerals or gas");
+            return;
+        }
+        BWAPI::Broodwar->printf("Inserted: %d(+%d)", (int)workers.size(), (int)addWorkers.size());
+
+        if (controller.build(workers.back(), BuildingType)) {
+            BWAPI::Broodwar->printf("Start building: %s", BuildingType.getName().c_str());
+            cur_build_index++;
+        }
+    }
+
+};
+
 
 struct Planner {
     Planner(): managers() {
         managers.emplace_back(std::make_unique<TrainingBehavior>());
         managers.emplace_back(std::make_unique<BuildingBehavior>());
+        managers.emplace_back(std::make_unique<BuildOrderBehavior>());
         managers.emplace_back(std::make_unique<HarvestingBehavior>());
     }
     void update(const BlackBoard& bb, Controller& controller) {

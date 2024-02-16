@@ -18,7 +18,7 @@ public:
     // functions that are triggered by various BWAPI events from main.cpp
 	void onStart() {
 		// Set our BWAPI options here    
-		BWAPI::Broodwar->setLocalSpeed(10);
+		BWAPI::Broodwar->setLocalSpeed(0);
 		BWAPI::Broodwar->setFrameSkip(0);
 		
 		// Enable the flag that tells BWAPI top let users enter input while bot plays

@@ -30,7 +30,7 @@ struct Controller {
         }
     }
 
-    void build(Worker worker, BWAPI::UnitType buildingType) {
+    bool build(Worker worker, BWAPI::UnitType buildingType) {
         // Get a location that we want to build the building next to
         BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
 
@@ -39,6 +39,10 @@ struct Controller {
         BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(buildingType, desiredPos, maxBuildRange, false);
         if (worker->unit->build(buildingType, buildPos)) {
             worker->changeState(WorkerStates::W_GOING_TO_BUILD);
+            return 1;
+        }
+        else {
+            return 0;
         }
     }
 };
