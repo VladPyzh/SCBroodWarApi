@@ -15,7 +15,8 @@ enum WorkerStates {
     W_MINING = 3,
     W_GOING_TO_BUILD = 4,
     W_BUILDING = 5,
-    W_RETURNING_CARGO = 6
+    W_RETURNING_CARGO = 6,
+    W_SCOUTING = 7
 };
 
 #define WRITE_ENUM(out, var, val) \
@@ -94,11 +95,12 @@ struct FSM {
 const FSM<WorkerStates> WORKER_FSM({
     {W_UNKNOWN, {W_CREATING, W_IDLE}},
     {W_CREATING, {W_IDLE}},
-    {W_IDLE, {W_MINING, W_GOING_TO_BUILD, W_RETURNING_CARGO}},
+    {W_IDLE, {W_MINING, W_GOING_TO_BUILD, W_RETURNING_CARGO, W_SCOUTING}},
     {W_MINING, {W_IDLE, W_GOING_TO_BUILD, W_RETURNING_CARGO}},
     {W_GOING_TO_BUILD, {W_BUILDING}},
     {W_BUILDING, {W_IDLE}},
-    {W_RETURNING_CARGO, {W_IDLE}}
+    {W_RETURNING_CARGO, {W_IDLE}},
+    {W_SCOUTING, {}}
 });
 
 const FSM<DepotStates> DEPOT_FSM({

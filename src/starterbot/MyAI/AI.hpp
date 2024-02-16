@@ -30,9 +30,10 @@ public:
 	
 	void onFrame() {
 		m_mapTools.onFrame();
-
+		
 		blackBoard.fetch();
-		planner.update(blackBoard, controller);
+		planner.update(blackBoard, controller, m_mapTools);
+
 	}
 
 	void onEnd(bool isWinner) {

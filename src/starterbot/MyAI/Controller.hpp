@@ -41,4 +41,10 @@ struct Controller {
             worker->changeState(WorkerStates::W_GOING_TO_BUILD);
         }
     }
+
+    void moveUnit(Worker worker, BWAPI::Position targetPosition) {
+        //moveUnit<WorkerStates>(worker);
+        worker->unit->move(targetPosition);
+        worker->changeState(WorkerStates::W_SCOUTING);
+    }
 };

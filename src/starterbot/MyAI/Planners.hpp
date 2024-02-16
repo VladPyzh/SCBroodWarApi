@@ -3,19 +3,20 @@
 #include "BB.hpp"
 #include "Controller.hpp"
 #include "Units.hpp"
+#include "MapTools.h"
 
 #include <vector>
 #include <memory>
 
 
 struct Behavior {
-    virtual void update(const BlackBoard& bb, Controller& controller) = 0;
+    virtual void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) = 0;
     virtual ~Behavior() {}
 };
 
 
 struct HarvestingBehavior : public Behavior {
-    void update(const BlackBoard& bb, Controller& controller) {
+    void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) {
         std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
         for (const Worker& worker : workers) {
             controller.harvestMinerals(worker);
@@ -28,7 +29,7 @@ struct HarvestingBehavior : public Behavior {
 };
 
 struct BuildingBehavior : public Behavior {
-    void update(const BlackBoard& bb, Controller& controller) {
+    void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) {
         std::vector<Worker> workersA = bb.getWorkers(WorkerStates::W_IDLE);
         std::vector<Worker> workersB = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
         while (workersB.size()) {
@@ -62,7 +63,7 @@ struct BuildingBehavior : public Behavior {
 };
 
 struct TrainingBehavior : public Behavior {
-    void update(const BlackBoard& bb, Controller& controller) {
+    void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) {
         std::vector<Depot> depots = bb.getDepots();
         for (const Depot& depot : depots) {
             controller.train(depot, bb.workerType());
@@ -74,17 +75,45 @@ struct TrainingBehavior : public Behavior {
     }
 };
 
+struct ScoutingBehavior : public Behavior {
+    void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) {
+        /*
+        BWAPI::TilePosition finalScoutingPosition = BWAPI::Broodwar->enemy()->getStartLocation();
+        std::cout << "Initial Scouting Position: " << finalScoutingPosition << std::endl;
 
+        if (finalScoutingPosition.y >= 500) {
+            finalScoutingPosition.x -= 700;
+        }
+        else {
+            finalScoutingPosition.x += 700;
+        }
+        std::cout << "Final Scouting Position: " << finalScoutingPosition << std::endl;
+        */
+
+        std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
+        for (const Worker& worker : workers) {
+            BWAPI::Position start_position = worker->unit->getPosition();
+            BWAPI::Position target_position = BWAPI::Position();
+            target_position.x = (32 * 96) - start_position.x;
+            target_position.y = (32 * 128) - start_position.y;
+
+            std::cout << "Target Position: " << target_position << std::endl;
+            controller.moveUnit(worker, target_position);
+        }
+
+    }
+};
 
 struct Planner {
     Planner(): managers() {
+        managers.emplace_back(std::make_unique<ScoutingBehavior>());
         managers.emplace_back(std::make_unique<TrainingBehavior>());
         managers.emplace_back(std::make_unique<BuildingBehavior>());
         managers.emplace_back(std::make_unique<HarvestingBehavior>());
     }
-    void update(const BlackBoard& bb, Controller& controller) {
+    void update(const BlackBoard& bb, Controller& controller, MapTools& map_tool) {
         for (const auto& manager : managers) {
-            manager->update(bb, controller);
+            manager->update(bb, controller, map_tool);
         }
     }
     std::vector<std::unique_ptr<Behavior>> managers;
