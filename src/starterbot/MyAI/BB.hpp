@@ -58,6 +58,14 @@ struct BlackBoard {
                 }
                 break;
             }
+            /*
+            case WorkerStates::W_SCOUTING: {
+                if (!worker->unit->isIdle()) {
+                    worker->changeState(WorkerStates::W_IDLE);
+                }
+                break;
+            }
+            */
             }
         }
         for (Depot depot : m_depots) {
@@ -80,11 +88,52 @@ struct BlackBoard {
                 throw std::runtime_error("unknown state");
             }
         }
+        for (Barrack barrack : m_barracks) {
+            if (barrack->unit->isBeingConstructed()) {
+                barrack->changeState(B_CREATING);
+            }
+            else if (barrack->unit->isTraining()) {
+                barrack->changeState(B_TRAINING);
+            }
+            else if (barrack->unit->isCompleted()) {
+                barrack->changeState(B_IDLE);
+            }
+            else {
+                throw std::runtime_error("unknown state");
+            }
+        }
+        for (Marine marine : m_marines) {
+            switch (marine->state.inner) {
+            case MarineStates::M_UNKNOWN: {
+                if (marine->unit->isBeingConstructed()) {
+                    marine->changeState(MarineStates::M_CREATING);
+                }
+                if (marine->unit->isCompleted()) {
+                    marine->changeState(MarineStates::M_IDLE);
+                }
+                break;
+            }
+            case MarineStates::M_CREATING: {
+                if (marine->unit->isCompleted()) {
+                    marine->changeState(MarineStates::M_IDLE);
+                }
+                break;
+            }
+            case MarineStates::M_MOVING: {
+                if (!marine->unit->isMoving()) {
+                    marine->changeState(MarineStates::M_IDLE);
+                }
+                break;
+            }
+            }
+        }
     
+        
         for (Worker worker : m_workers) {
             std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
         }
         std::cout << '\n';
+        
 
         m_minerals = BWAPI::Broodwar->self()->minerals();
         m_unitSlotsAvailable = BWAPI::Broodwar->self()->supplyTotal();
@@ -118,6 +167,10 @@ struct BlackBoard {
         return BWAPI::Broodwar->self()->getRace().getWorker();
     }
 
+    BWAPI::UnitType marineType() const {
+        return BWAPI::UnitTypes::Terran_Marine;
+    }
+
     std::vector<Worker> getWorkers(WorkerStates state) const {
         std::vector<Worker> res;
         for (Worker worker : m_workers) {
@@ -133,9 +186,17 @@ struct BlackBoard {
         return m_depots;
     }
 
+    std::vector<Barrack> getBarracks() const {
+        return m_barracks;
+    }
+
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;
     std::vector<Supply> m_supplies;
+    //std::vector<Enemy> m_enemy;
+    std::vector<Barrack> m_barracks;
+    std::vector<Marine> m_marines;
+
     std::vector<BWAPI::UnitType> pending_units;
     int m_minerals;
     int m_unitSlotsAvailable;

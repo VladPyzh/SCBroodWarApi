@@ -30,15 +30,31 @@ struct Controller {
         }
     }
 
-    void build(Worker worker, BWAPI::UnitType buildingType) {
-        // Get a location that we want to build the building next to
-        BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
+    void train(Barrack barrack, BWAPI::UnitType unitType) {
+        if (barrack->unit->train(unitType)) {
+            barrack->changeState(BarrackStates::B_TRAINING);
+        }
+    }
 
-        // Ask BWAPI for a building location near the desired position for the type
-        int maxBuildRange = 64;
-        BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(buildingType, desiredPos, maxBuildRange, false);
+    void moveUnit(Worker worker, BWAPI::Position targetPosition) {
+        //moveUnit<WorkerStates>(worker);
+        worker->unit->move(targetPosition);
+        worker->changeState(WorkerStates::W_SCOUTING);
+    }
+
+    void moveUnit(Marine marine, BWAPI::Position targetPosition) {
+        //moveUnit<WorkerStates>(worker);
+        marine->unit->move(targetPosition);
+        marine->changeState(MarineStates::M_MOVING);
+    }
+
+    bool build(Worker worker, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPos) {
         if (worker->unit->build(buildingType, buildPos)) {
             worker->changeState(WorkerStates::W_GOING_TO_BUILD);
+            return 1;
+        }
+        else {
+            return 0;
         }
     }
 };
