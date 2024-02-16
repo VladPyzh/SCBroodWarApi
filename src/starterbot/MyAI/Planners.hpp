@@ -16,39 +16,48 @@ struct Behavior {
 
 struct HarvestingBehavior : public Behavior {
     void update(const BlackBoard& bb, Controller& controller) {
-        std::vector<Worker> workers = bb.getAvailableWorkers();
+        std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
         for (const Worker& worker : workers) {
             controller.harvestMinerals(worker);
+        }
+        workers = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
+        for (const Worker& worker : workers) {
+            controller.returnCargo(worker);
         }
     }
 };
 
 struct BuildingBehavior : public Behavior {
     void update(const BlackBoard& bb, Controller& controller) {
-        std::vector<Worker> workers = bb.getAvailableWorkers();
-        if (workers.empty()) {
+        std::vector<Worker> workersA = bb.getWorkers(WorkerStates::W_IDLE);
+        std::vector<Worker> workersB = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
+        while (workersB.size()) {
+            workersA.emplace_back(workersB.back());
+            workersB.pop_back();
+        }
+        if (workersA.empty()) {
             return;
         }
         // if (shouldBuildBarracks(bb)) {
         //     controller.build(workers[0], BARRACKS);
         // }
-        if (shouldBuildSupplyDepot(bb)) {
-            controller.build(workers[workers.size() - 1], BWAPI::UnitTypes::Terran_Supply_Depot);
-        }
+        // if (shouldBuildSupplyDepot(bb)) {
+        //     controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot);
+        // }
     }
 
     bool shouldBuildBarracks(const BlackBoard& bb) {
         int minerals = bb.minerals();
-        return minerals >= 200;
+        return minerals >= BWAPI::UnitTypes::Terran_Barracks.supplyRequired();
     }
 
     bool shouldBuildSupplyDepot(const BlackBoard& bb) {
         int minerals = bb.minerals();
-        int unitSlots = bb.unitSlots();
+        int unitSlots = bb.freeUnitSlots();
 
         // Todo: approximate that in X seconds we will outrun of unit slots
         // based on current unit production speed
-        return minerals >= 100 && unitSlots < 3;
+        return minerals >= BWAPI::UnitTypes::Terran_Supply_Depot.supplyRequired() && unitSlots < 5;
     }
 };
 

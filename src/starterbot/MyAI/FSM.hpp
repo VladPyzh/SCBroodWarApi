@@ -28,6 +28,9 @@ std::ostream& operator << (std::ostream& out, WorkerStates x) {
     WRITE_ENUM(out, x, W_CREATING);
     WRITE_ENUM(out, x, W_IDLE);
     WRITE_ENUM(out, x, W_MINING);
+    WRITE_ENUM(out, x, W_GOING_TO_BUILD);
+    WRITE_ENUM(out, x, W_BUILDING);
+    WRITE_ENUM(out, x, W_RETURNING_CARGO);
     return out;
 }
 
