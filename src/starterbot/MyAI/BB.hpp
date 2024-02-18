@@ -5,6 +5,7 @@
 #include <vector>
 #include <BWAPI.h>
 #include <stdexcept>
+#include "MapTools.h"
 
 
 struct BlackBoard {

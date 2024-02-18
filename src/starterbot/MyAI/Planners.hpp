@@ -3,6 +3,7 @@
 #include "BB.hpp"
 #include "Controller.hpp"
 #include "Units.hpp"
+#include "MapTools.h"
 
 #include <vector>
 #include <memory>
@@ -161,6 +162,38 @@ struct BuildOrderBehavior : public Behavior {
 
 };
 
+struct ScoutingBehavior : public Behavior {
+    Worker worker;
+    void update(const BlackBoard& bb, Controller& controller) {
+        /*
+        BWAPI::TilePosition finalScoutingPosition = BWAPI::Broodwar->enemy()->getStartLocation();
+        std::cout << "Initial Scouting Position: " << finalScoutingPosition << std::endl;
+
+        if (finalScoutingPosition.y >= 500) {
+            finalScoutingPosition.x -= 700;
+        }
+        else {
+            finalScoutingPosition.x += 700;
+        }
+        std::cout << "Final Scouting Position: " << finalScoutingPosition << std::endl;
+        */
+        if (!worker) {
+            std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
+            if (workers.size()) {
+                worker = workers.back();
+                BWAPI::Position start_position = worker->unit->getPosition();
+                BWAPI::Position target_position = BWAPI::Position();
+                target_position.x = (32 * 96) - start_position.x;
+                target_position.y = (32 * 128) - start_position.y;
+
+                std::cout << "Target Position: " << target_position << std::endl;
+                controller.moveUnit(worker, target_position);
+            }
+        }
+
+    }
+};
+
 /*
 
 struct IdleMarineBehavior : public Behavior { // defending logic
@@ -188,6 +221,7 @@ struct IdleMarineBehavior : public Behavior { // defending logic
 struct Planner {
     Planner(): managers() {
         //managers.emplace_back(std::make_unique<IdleMarineBehavior>());
+        managers.emplace_back(std::make_unique<ScoutingBehavior>());
         managers.emplace_back(std::make_unique<BuildOrderBehavior>());
         managers.emplace_back(std::make_unique<FirstScoutBehavior>());
         managers.emplace_back(std::make_unique<TrainingBehavior>());

@@ -28,6 +28,7 @@ public:
 	void onFrame() {
 		blackBoard.fetch();
 		planner.update(blackBoard, controller);
+
 	}
 
 	void onEnd(bool isWinner) {
