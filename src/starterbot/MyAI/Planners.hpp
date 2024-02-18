@@ -18,11 +18,6 @@ struct FirstScoutBehavior : public Behavior {
     bool scouted = false;
     void update(const BlackBoard& bb, Controller& controller) {
         std::vector<Worker> workersA = bb.getWorkers(WorkerStates::W_IDLE);
-        std::vector<Worker> workersB = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
-        while (workersB.size()) {
-            workersA.emplace_back(workersB.back());
-            workersB.pop_back();
-        }
         if (workersA.empty()) {
             return;
         }
@@ -41,7 +36,7 @@ struct HarvestingBehavior : public Behavior {
         for (const Worker& worker : workers) {
             controller.harvestMinerals(worker);
         }
-        workers = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
+        workers = bb.getWorkers(WorkerStates::W_IS_TO_RETURN_CARGO);
         for (const Worker& worker : workers) {
             controller.returnCargo(worker);
         }
@@ -51,47 +46,29 @@ struct HarvestingBehavior : public Behavior {
 struct BuildingBehavior : public Behavior {
     void update(const BlackBoard& bb, Controller& controller) {
         std::vector<Worker> workersA = bb.getWorkers(WorkerStates::W_IDLE);
-        std::vector<Worker> workersB = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
-        while (workersB.size()) {
-            workersA.emplace_back(workersB.back());
-            workersB.pop_back();
-        }
         if (workersA.empty()) {
             return;
         }
 
-        if (shouldBuildSupplyDepot(bb) && (bb.m_supplies.size()) < 1) {
-            controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::TilePosition(49, 7));
-        }
-        else if (shouldBuildSupplyDepot(bb) && (bb.m_supplies.size()) < 2) {
-            controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::TilePosition(49, 8));
-        }
-        else if (shouldBuildSupplyDepot(bb)) {
+        if (bb.m_supplies.size() >= 2 && shouldBuildSupplyDepot(bb)) {
             BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
 
             int maxBuildRange = 64;
-            controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::Broodwar->getBuildLocation(BWAPI::UnitTypes::Terran_Supply_Depot, desiredPos, maxBuildRange, false));
+            controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::Broodwar->getBuildLocation(BWAPI::UnitTypes::Terran_Supply_Depot, desiredPos, maxBuildRange, false), bb);
         }
-        // if (shouldBuildBarracks(bb)) {
-        //     controller.build(workers[0], BARRACKS);
-        // }
-        // if (shouldBuildSupplyDepot(bb)) {
-        //     controller.build(workersA.back(), BWAPI::UnitTypes::Terran_Supply_Depot);
-        // }
     }
 
     bool shouldBuildBarracks(const BlackBoard& bb) {
         int minerals = bb.minerals();
-        return minerals >= BWAPI::UnitTypes::Terran_Barracks.supplyRequired();
+        return minerals >= BWAPI::UnitTypes::Terran_Barracks.mineralPrice();
     }
 
     bool shouldBuildSupplyDepot(const BlackBoard& bb) {
         int minerals = bb.minerals();
         int unitSlots = bb.freeUnitSlots();
-
         // Todo: approximate that in X seconds we will outrun of unit slots
         // based on current unit production speed
-        return minerals >= BWAPI::UnitTypes::Terran_Supply_Depot.supplyRequired() && unitSlots < 5;
+        return minerals >= BWAPI::UnitTypes::Terran_Supply_Depot.mineralPrice() && unitSlots < 5;
     }
 };
 
@@ -102,15 +79,27 @@ struct TrainingBehavior : public Behavior {
             if (depot->state.inner == D_TRAINING) {
                 continue;
             }
-            controller.train(depot, bb.workerType());
+            if (!canTrainUnit(bb, bb.workerType())) {
+                continue;
+            }
+            controller.train(depot, bb.workerType(), bb);
         }
         std::vector<Barrack> barracks = bb.getBarracks();
         for (const Barrack& barrack : barracks) {
             if (barrack->state.inner == B_TRAINING) {
                 continue;
             }
-            controller.train(barrack, bb.marineType());
+            if (!canTrainUnit(bb, bb.marineType())) {
+                continue;
+            }
+            controller.train(barrack, bb.marineType(), bb);
         }
+    }
+
+    bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
+        int minerals = bb.minerals();
+        int unitSlots = bb.freeUnitSlots();
+        return minerals >= type.mineralPrice() && unitSlots >= type.supplyRequired();
     }
 };
 
@@ -133,10 +122,6 @@ struct BuildOrderBehavior : public Behavior {
             return;
 
         std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
-        std::vector<Worker> addWorkers = bb.getWorkers(WorkerStates::W_RETURNING_CARGO);
-
-        workers.insert(workers.end(), addWorkers.begin(), addWorkers.end());
-
 
         if (workers.empty()) {
             return;
@@ -149,12 +134,10 @@ struct BuildOrderBehavior : public Behavior {
         int cost_gas = BuildingType.gasPrice();
 
         if (have_minerals < cost_mineral) {
-            BWAPI::Broodwar->printf("\tNot enough minerals or gas");
             return;
         }
-        BWAPI::Broodwar->printf("Inserted: %d(+%d)", (int)workers.size(), (int)addWorkers.size());
 
-        if (controller.build(workers.back(), BuildingType, positions[cur_build_index])) {
+        if (controller.build(workers.back(), BuildingType, positions[cur_build_index], bb)) {
             BWAPI::Broodwar->printf("Start building: %s", BuildingType.getName().c_str());
             cur_build_index++;
         }
@@ -194,6 +177,15 @@ struct ScoutingBehavior : public Behavior {
     }
 };
 
+struct ReturnToBaseBehavior : public Behavior {
+    void update(const BlackBoard& bb, Controller& controller) {
+        std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
+        for (Worker worker : workers) {
+            controller.moveUnit(worker, BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()));
+        }
+    }
+};
+
 /*
 
 struct IdleMarineBehavior : public Behavior { // defending logic
@@ -227,6 +219,7 @@ struct Planner {
         managers.emplace_back(std::make_unique<TrainingBehavior>());
         managers.emplace_back(std::make_unique<BuildingBehavior>());
         managers.emplace_back(std::make_unique<HarvestingBehavior>());
+        managers.emplace_back(std::make_unique<ReturnToBaseBehavior>());
     }
     void update(const BlackBoard& bb, Controller& controller) {
         for (const auto& manager : managers) {

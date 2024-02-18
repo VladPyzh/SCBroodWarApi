@@ -35,17 +35,14 @@ struct BlackBoard {
                 break;
             }
             case WorkerStates::W_IDLE: {
-                if (worker->unit->isGatheringMinerals()) {
-                    worker->changeState(WorkerStates::W_MINING);
-                }
                 if (worker->unit->isCarryingMinerals()) {
-                    worker->changeState(WorkerStates::W_RETURNING_CARGO);
+                    worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                 }
                 break;
             }
             case WorkerStates::W_MINING: {
-                if (!worker->unit->isGatheringMinerals() && worker->unit->isCarryingMinerals()) {
-                    worker->changeState(WorkerStates::W_RETURNING_CARGO);
+                if (worker->unit->isCarryingMinerals()) {
+                    worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                 }
                 break;
             }
@@ -67,14 +64,12 @@ struct BlackBoard {
                 }
                 break;
             }
-            /*
             case WorkerStates::W_SCOUTING: {
-                if (!worker->unit->isIdle()) {
+                if (!worker->unit->isMoving()) {
                     worker->changeState(WorkerStates::W_IDLE);
                 }
                 break;
             }
-            */
             }
         }
         for (Depot depot : m_depots) {
@@ -138,11 +133,10 @@ struct BlackBoard {
         }
     
         
-        for (Worker worker : m_workers) {
-            if (worker->state.inner != W_MINING)
-                std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
-        }
-        std::cout << '\n';
+        // for (Worker worker : m_workers) {
+        //     std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
+        // }
+        // std::cout << '\n';
         
 
         m_minerals = BWAPI::Broodwar->self()->minerals();
@@ -160,9 +154,6 @@ struct BlackBoard {
 
     int freeUnitSlots() const {
         int res = m_unitSlotsAvailable - m_unitSlotsTaken;
-        for (auto type : pending_units) {
-            res += type.supplyProvided();
-        }
         for (auto type : pending_units) {
             res -= type.supplyRequired();
         }

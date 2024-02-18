@@ -18,8 +18,9 @@ enum WorkerStates {
     W_MINING = 3,
     W_GOING_TO_BUILD = 4,
     W_BUILDING = 5,
-    W_RETURNING_CARGO = 6,
-    W_SCOUTING = 7
+    W_IS_TO_RETURN_CARGO = 6,
+    W_RETURNING_CARGO = 7,
+    W_SCOUTING = 8
 };
 
 std::ostream& operator << (std::ostream& out, WorkerStates x) {
@@ -29,6 +30,7 @@ std::ostream& operator << (std::ostream& out, WorkerStates x) {
     WRITE_ENUM(out, x, W_MINING);
     WRITE_ENUM(out, x, W_GOING_TO_BUILD);
     WRITE_ENUM(out, x, W_BUILDING);
+    WRITE_ENUM(out, x, W_IS_TO_RETURN_CARGO);
     WRITE_ENUM(out, x, W_RETURNING_CARGO);
     WRITE_ENUM(out, x, W_SCOUTING);
 
@@ -138,10 +140,11 @@ struct FSM {
 const FSM<WorkerStates> WORKER_FSM({
     {W_UNKNOWN, {W_CREATING, W_IDLE}},
     {W_CREATING, {W_IDLE}},
-    {W_IDLE, {W_MINING, W_GOING_TO_BUILD, W_RETURNING_CARGO, W_SCOUTING}},
-    {W_MINING, {W_IDLE, W_GOING_TO_BUILD, W_RETURNING_CARGO}},
+    {W_IDLE, {W_MINING, W_GOING_TO_BUILD, W_IS_TO_RETURN_CARGO, W_SCOUTING}},
+    {W_MINING, {W_IDLE, W_GOING_TO_BUILD, W_IS_TO_RETURN_CARGO}},
     {W_GOING_TO_BUILD, {W_BUILDING}},
     {W_BUILDING, {W_IDLE}},
+    {W_IS_TO_RETURN_CARGO, {W_RETURNING_CARGO}},
     {W_RETURNING_CARGO, {W_IDLE}},
     {W_SCOUTING, {W_IDLE}}
 });
