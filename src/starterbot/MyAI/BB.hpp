@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MapTools.h"
 #include "Units.hpp"
 #include <vector>
 #include <BWAPI.h>
@@ -7,7 +8,14 @@
 
 
 struct BlackBoard {
+    void init() {
+        m_mapTools.onStart();
+        m_mapTools.saveMapToFile("Destination");
+    }
+
     void fetch() {
+        m_mapTools.onFrame();
+
         for (Worker worker : m_workers) {
             switch (worker->state.inner) {
             case WorkerStates::W_UNKNOWN: {
@@ -130,7 +138,8 @@ struct BlackBoard {
     
         
         for (Worker worker : m_workers) {
-            std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
+            if (worker->state.inner != W_MINING)
+                std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
         }
         std::cout << '\n';
         
@@ -189,6 +198,8 @@ struct BlackBoard {
     std::vector<Barrack> getBarracks() const {
         return m_barracks;
     }
+
+    MapTools m_mapTools;
 
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;

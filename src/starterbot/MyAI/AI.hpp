@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MapTools.h"
 #include "BB.hpp"
 #include "Controller.hpp"
 #include "Planners.hpp"
@@ -8,7 +7,6 @@
 
 struct AI
 {
-    MapTools m_mapTools;
 	BlackBoard blackBoard;
 	Controller controller;
 	Planner planner;
@@ -24,14 +22,10 @@ public:
 		// Enable the flag that tells BWAPI top let users enter input while bot plays
 		BWAPI::Broodwar->enableFlag(BWAPI::Flag::UserInput);
 
-		// Call MapTools OnStart
-		m_mapTools.onStart();
-		m_mapTools.saveMapToFile("Destination");
+		blackBoard.init();
 	}
 	
 	void onFrame() {
-		m_mapTools.onFrame();
-
 		blackBoard.fetch();
 		planner.update(blackBoard, controller);
 	}
