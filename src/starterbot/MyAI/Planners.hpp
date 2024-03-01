@@ -14,6 +14,44 @@ struct Behavior {
     virtual ~Behavior() {}
 };
 
+template
+<typename T>
+struct TreeBasedBehavior: public Behavior {
+    virtual std::shared_ptr<bt::node> createBT(std::shared_ptr<Unit<T>> unit, const BlackBoard& bb, Controller& controller) = 0;
+    void update(const BlackBoard& bb, Controller& controller) {
+        std::vector<int> to_delete;
+        for (int i = 0; i < trees.size(); i++) {
+            auto tree = trees[i];
+            auto status = tree->step();
+            if (status != bt::state::running) {
+                trees.erase(trees.begin() + i);
+                i--;
+                continue;
+            }
+        }
+    }
+    std::vector<std::shared_ptr<bt::node>> trees;
+};
+
+struct GatherMineralsBehavior: public TreeBasedBehavior<WorkerStates> {
+    std::shared_ptr<bt::node> createBT(Worker worker, const BlackBoard& bb, Controller& controller) {
+        return bt::sequence([
+            action_once([]() {
+                controller.harvestMinerals(worker);
+            }),
+            wait_until([]() {
+                return worker->state.inner == WorkerStates::W_IS_TO_RETURN_CARGO;
+            }),
+            action_once([]() {
+                controller.returnCargo(worker);
+            }),
+            wait_until([]() {
+                return worker->state.inner == WorkerStates::W_IDLE;
+            }),
+        ]);
+    }
+};
+
 struct FirstScoutBehavior : public Behavior {
     bool scouted = false;
     void update(const BlackBoard& bb, Controller& controller) {
@@ -218,13 +256,25 @@ struct Planner {
         managers.emplace_back(std::make_unique<FirstScoutBehavior>());
         managers.emplace_back(std::make_unique<TrainingBehavior>());
         managers.emplace_back(std::make_unique<BuildingBehavior>());
-        managers.emplace_back(std::make_unique<HarvestingBehavior>());
+        // managers.emplace_back(std::make_unique<HarvestingBehavior>());
         managers.emplace_back(std::make_unique<ReturnToBaseBehavior>());
     }
+
     void update(const BlackBoard& bb, Controller& controller) {
+        // // receive bb.units;   
+        // for (const auto& manager : managers) {
+        //     manager->submitQuotaRequest(bb);
+        // }
+        // distribute vectors of units
         for (const auto& manager : managers) {
             manager->update(bb, controller);
         }
+        std::vector<Worker> workers = bb.getWorkers(WorkerStates::W_IDLE);
+        for (Worker worker : workers) {
+            GMB.createBT(worker, bb, controller);
+        }
+        GMB->update(bb, controller);
     }
     std::vector<std::unique_ptr<Behavior>> managers;
+    GatherMineralsBehavior GMB;
 };
