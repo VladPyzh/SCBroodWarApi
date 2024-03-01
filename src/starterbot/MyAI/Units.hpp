@@ -4,10 +4,16 @@
 #include <BWAPI.h>
 #include <memory>
 
+
+struct BaseUnit {
+    virtual ~BaseUnit() {}
+};
+
 template<typename T>
-struct Unit {
+struct Unit : BaseUnit {
     BWAPI::Unit unit;
     State<T> state;
+    bool isActive = false;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
 

@@ -13,34 +13,42 @@ struct Controller {
         bb_mutable.pending_units.emplace_back(type);
     }
 
-    void harvestMinerals(Worker worker) {
+    bool harvestMinerals(Worker worker) {
         BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(worker->unit, BWAPI::Broodwar->getMinerals());
         if (closestMineral && closestMineral->getResources() > 0) { 
             bool success = worker->unit->gather(closestMineral); 
             if (success) {
                 worker->changeState(WorkerStates::W_MINING);
             }
+            return success;
         }
+        return false;
     }
 
-    void returnCargo(Worker worker) {
+    bool returnCargo(Worker worker) {
         if (worker->unit->returnCargo()) {
             worker->changeState(WorkerStates::W_RETURNING_CARGO);
+            return true;
         }
+        return false;
     }
 
-    void train(Depot depot, BWAPI::UnitType unitType, const BlackBoard& bb) {
+    bool train(Depot depot, BWAPI::UnitType unitType, const BlackBoard& bb) {
         if (depot->unit->train(unitType)) {
             depot->changeState(DepotStates::D_TRAINING);
             addPendingUnit(bb, unitType);
+            return true;
         }
+        return false;
     }
 
-    void train(Barrack barrack, BWAPI::UnitType unitType, const BlackBoard& bb) {
+    bool train(Barrack barrack, BWAPI::UnitType unitType, const BlackBoard& bb) {
         if (barrack->unit->train(unitType)) {
             barrack->changeState(BarrackStates::B_TRAINING);
             addPendingUnit(bb, unitType);
+            return true;
         }
+        return false;
     }
 
     void moveUnit(Worker worker, BWAPI::Position targetPosition) {
@@ -56,7 +64,6 @@ struct Controller {
     }
 
     bool build(Worker worker, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPos, const BlackBoard& bb) {
-        std::cout << "got build order" << std::endl;
         if (worker->unit->build(buildingType, buildPos)) {
             worker->changeState(WorkerStates::W_GOING_TO_BUILD);
             addPendingUnit(bb, buildingType);

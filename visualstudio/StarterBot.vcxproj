@@ -23,6 +23,7 @@
     <ClInclude Include="..\src\starterbot\MapTools.h" />
     <ClInclude Include="..\src\starterbot\MyAI\AI.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\BB.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\bt.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Controller.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\EventHandler.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\FSM.hpp" />

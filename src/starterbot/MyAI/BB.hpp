@@ -172,22 +172,36 @@ struct BlackBoard {
         return BWAPI::UnitTypes::Terran_Marine;
     }
 
-    std::vector<Worker> getWorkers(WorkerStates state) const {
-        std::vector<Worker> res;
-        for (Worker worker : m_workers) {
-            if (worker->state.inner == state) {
-                res.push_back(worker);
+    template<typename T>
+    std::vector<std::shared_ptr<Unit<T>>> getUnits(T state) const {
+        std::vector<std::shared_ptr<Unit<T>>> res;
+
+        auto units = getUnits<T>();
+        for (std::shared_ptr<Unit<T>> unit : units) {
+            if (unit->state.inner == state && !unit->isActive) {
+                res.push_back(unit);
             }
         }
         return res;
     }
 
+    template<typename T>
+    std::vector<std::shared_ptr<Unit<T>>> getUnits() const {
+        throw std::runtime_error("not supported");
+    }
 
-    std::vector<Depot> getDepots() const {
+    template<>
+    std::vector<Worker> getUnits<WorkerStates>() const {
+        return m_workers;
+    }
+
+    template<>
+    std::vector<Depot> getUnits<DepotStates>() const {
         return m_depots;
     }
 
-    std::vector<Barrack> getBarracks() const {
+    template<>
+    std::vector<Barrack> getUnits<BarrackStates>() const {
         return m_barracks;
     }
 

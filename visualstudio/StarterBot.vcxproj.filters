@@ -18,5 +18,6 @@
     <ClInclude Include="..\src\starterbot\MyAI\FSM.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Planners.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Units.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\bt.hpp" />
   </ItemGroup>
 </Project>
