@@ -39,14 +39,14 @@ struct BlackBoard {
                 break;
             }
             case WorkerStates::W_IDLE: {
-                if (worker->unit->isCarryingMinerals()) {
+                if (worker->unit->isCarryingMinerals() && worker->framesSinceUpdate > 10) {
                     DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in idle" << std::endl)
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                 }
                 break;
             }
             case WorkerStates::W_MINING: {
-                if (worker->unit->isCarryingMinerals()) {
+                if (worker->unit->isCarryingMinerals() && worker->framesSinceUpdate > 10) {
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                     DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in mining" << std::endl)
                 }
@@ -188,7 +188,6 @@ struct BlackBoard {
             if (unit->state.inner == state && !unit->isActive) {
                 res.push_back(unit);
             }
-            break;
         }
         return res;
     }

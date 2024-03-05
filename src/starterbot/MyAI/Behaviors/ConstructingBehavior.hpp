@@ -14,7 +14,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
     std::vector<BWAPI::TilePosition> positions = {
         BWAPI::TilePosition(49, 7),
         BWAPI::TilePosition(46, 11),
-        BWAPI::TilePosition(49, 9),
+        BWAPI::TilePosition(46, 7),
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
@@ -23,7 +23,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
         int cost_mineral = type.mineralPrice();
         int cost_gas = type.gasPrice();
 
-        return have_minerals >= cost_mineral + 20; // && have_gas >= cost_gas;
+        return have_minerals >= cost_mineral; // && have_gas >= cost_gas;
     }
 
     bool shouldConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
@@ -35,8 +35,13 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
 
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
         if (cur_build_index < build_order.size() && canConstruct(bb, build_order[cur_build_index])) {
-            return QuotaRequest{ 5, std::max(0, 1 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };
-        } else if (shouldConstruct(bb, BWAPI::UnitTypes::Terran_Supply_Depot)) {
+            if (cur_build_index == 0) {
+                return QuotaRequest{ 5, std::max(0, 1 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };
+            }
+            else {
+                return QuotaRequest{ 5, std::max(0, 2 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };
+            }
+        } else if (cur_build_index >= build_order.size() && shouldConstruct(bb, BWAPI::UnitTypes::Terran_Supply_Depot)) {
             return QuotaRequest{ 2, std::max(0, 5 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };
         } else {
             return QuotaRequest{ 2, 0, BWAPI::UnitTypes::Terran_SCV };
