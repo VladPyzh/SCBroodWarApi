@@ -21,6 +21,7 @@ struct BlackBoard {
         m_mapTools.onFrame();
 
         for (Worker worker : m_workers) {
+            worker->framesSinceUpdate++;
             switch (worker->state.inner) {
             case WorkerStates::W_UNKNOWN: {
                 if (worker->unit->isBeingConstructed()) {
@@ -52,7 +53,7 @@ struct BlackBoard {
                 break;
             }
             case WorkerStates::W_GOING_TO_BUILD: {
-                if (worker->unit->isConstructing()) {
+                if (worker->unit->isConstructing() && worker->framesSinceUpdate > 10) {
                     worker->changeState(WorkerStates::W_BUILDING);
                 }
                 break;

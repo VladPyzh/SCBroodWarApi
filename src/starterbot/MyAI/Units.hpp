@@ -15,6 +15,7 @@ template<typename T>
 struct Unit : BaseUnit {
     BWAPI::Unit unit;
     State<T> state;
+    int framesSinceUpdate = 0;
     bool isActive = false;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
@@ -23,6 +24,7 @@ struct Unit : BaseUnit {
         if (newState == state.inner) {
             return;
         }
+        framesSinceUpdate = 0;
         DEBUG_LOG(DEBUG_STATE_TRANSITIONS, unit->getID() << "from state " << state.inner << " to state " << newState << std::endl)
         provideFSM<T>().update(state, newState);
     }
