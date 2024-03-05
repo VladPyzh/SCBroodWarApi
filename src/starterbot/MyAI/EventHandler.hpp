@@ -36,6 +36,24 @@ struct EventHandler {
 			}
 		}
 	}
+
+	void onUnitMorph(BWAPI::Unit unit, BlackBoard& bb) {
+		BWAPI::UnitType type = unit->getType();
+		switch (type) {
+		case BWAPI::UnitTypes::Terran_Refinery: {
+			bb.m_refineries.push_back(std::make_shared<RefineryUnit>(unit));
+			break;
+		}
+		}
+		for (int i = 0; i < bb.pending_units.size(); i++) { // NOT SURE FOR ALL? CAN ERASE TANKS
+			if (bb.pending_units[i] == type) {
+				bb.pending_units.erase(bb.pending_units.begin() + i);
+				break;
+			}
+		}
+	}
+	
+
 	void onUnitComplete(BWAPI::Unit unit, BlackBoard& bb) {
 		// update unit status
 		

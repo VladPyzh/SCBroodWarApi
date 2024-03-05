@@ -10,7 +10,7 @@ struct TrainWorkersBehaviour : public TreeBasedBehavior<DepotStates> {
     bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
         int minerals = bb.minerals();
         int unitSlots = bb.freeUnitSlots();
-        return minerals >= type.mineralPrice() && unitSlots >= type.supplyRequired();
+        return minerals >= type.mineralPrice() && unitSlots >= type.supplyRequired() && bb.m_workers.size() < 18 + 3;
     }
     std::shared_ptr<bt::node> createBT(Depot depot, const BlackBoard& bb, Controller& controller) {
         return bt::sequence({
@@ -31,7 +31,7 @@ struct TrainMarinesBehaviour : public TreeBasedBehavior<BarrackStates> {
     DECLARE_STR_TYPE(TrainMarinesBehaviour)
     
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
-        return QuotaRequest{ 100, 1 - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks };
+        return QuotaRequest{ 100, 2 - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
     }
     bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
         int minerals = bb.minerals();

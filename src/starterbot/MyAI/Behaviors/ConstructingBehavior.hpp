@@ -1,6 +1,26 @@
 
 #include "BehaviorBase.hpp"
 
+BWAPI::TilePosition findClosestVespeneGeyser(BWAPI::Unit worker) {
+    BWAPI::Unit closestGeyser = nullptr;
+    double minDistance = std::numeric_limits<double>::max();
+
+    for (auto& unit : BWAPI::Broodwar->getNeutralUnits()) {
+        if (unit->getType() == BWAPI::UnitTypes::Resource_Vespene_Geyser) {
+            double distance = worker->getPosition().getDistance(unit->getPosition());
+            if (distance < minDistance) {
+                closestGeyser = unit;
+                minDistance = distance;
+            }
+        }
+    }
+
+    DEBUG_LOG(true, closestGeyser->getTilePosition().x << " " << closestGeyser->getTilePosition().y << std::endl)
+
+
+    return closestGeyser->getTilePosition();
+}
+
 struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
     DECLARE_STR_TYPE(ConstructingBehavior)
 
@@ -9,21 +29,27 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
       BWAPI::UnitTypes::Terran_Supply_Depot,
       BWAPI::UnitTypes::Terran_Barracks,
       BWAPI::UnitTypes::Terran_Supply_Depot,
+      BWAPI::UnitTypes::Terran_Refinery,
+      BWAPI::UnitTypes::Terran_Barracks,
+      BWAPI::UnitTypes::Terran_Academy,
     };
 
     std::vector<BWAPI::TilePosition> positions = {
         BWAPI::TilePosition(49, 7),
         BWAPI::TilePosition(46, 11),
         BWAPI::TilePosition(46, 7),
+        BWAPI::TilePosition(0, 0),
+        BWAPI::TilePosition(42, 11),
+        BWAPI::TilePosition(38, 11),
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
         int have_minerals = bb.minerals();
-        //int have_gas = bb.gas();
+        int have_gas = bb.gas();
         int cost_mineral = type.mineralPrice();
         int cost_gas = type.gasPrice();
 
-        return have_minerals >= cost_mineral; // && have_gas >= cost_gas;
+        return have_minerals >= cost_mineral && have_gas >= cost_gas;
     }
 
     bool shouldConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
@@ -77,13 +103,28 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
                         }),
                         bt::if_true([worker, &bb = std::as_const(bb), this, tree_for_building_idx]() {
                             // auto pos = BWAPI::Broodwar->getBuildLocation(build_order[tree_for_building_idx], positions[tree_for_building_idx], 64, false);
+
+                            if (build_order[tree_for_building_idx] == BWAPI::UnitTypes::Terran_Refinery) { // Corner case for refinery
+                                BWAPI::TilePosition position = findClosestVespeneGeyser(worker->unit);
+                                bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
+                                    worker->unit->canBuild(build_order[tree_for_building_idx], position);
+                                BWAPI_LOG_IF_ERROR()
+                            }
+                            else {
                             bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
                                 worker->unit->canBuild(build_order[tree_for_building_idx], positions[tree_for_building_idx]);
                             BWAPI_LOG_IF_ERROR()
                             return res;
+                            }
                         }),
                         bt::if_true([&controller, worker, &bb = std::as_const(bb), this, tree_for_building_idx]() {
-                            return controller.build(worker, build_order[tree_for_building_idx], positions[tree_for_building_idx], bb);
+                            if (build_order[tree_for_building_idx] == BWAPI::UnitTypes::Terran_Refinery) { // Corner case for refinery
+                                BWAPI::TilePosition position = findClosestVespeneGeyser(worker->unit);
+                                return controller.build(worker, build_order[tree_for_building_idx], position, bb);
+                            }
+                            else {
+                                return controller.build(worker, build_order[tree_for_building_idx], positions[tree_for_building_idx], bb);
+                            }
                         }),
                         bt::once([this, tree_for_building_idx]() {
                             cur_build_index++;

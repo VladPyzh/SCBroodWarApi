@@ -2,14 +2,17 @@
 #include "Behaviors/ConstructingBehavior.hpp"
 #include "Behaviors/GatheringBehavior.hpp"
 #include "Behaviors/TrainingBehavior.hpp"
+#include "Behaviors/MarineBehavior.hpp"
 
 struct Planner {
     Planner(): managers() {
+        managers.emplace_back(std::make_unique<GatherGasBehavior>());
         managers.emplace_back(std::make_unique<GatherMineralsBehavior>());
         managers.emplace_back(std::make_unique<ConstructingBehavior>());
         // managers.emplace_back(std::make_unique<ScoutEnemyBaseBehaviour>());
         managers.emplace_back(std::make_unique<TrainMarinesBehaviour>());
         managers.emplace_back(std::make_unique<TrainWorkersBehaviour>());
+        managers.emplace_back(std::make_unique<MoveOnRamp>()); // stupidest thing
     }
 
     template<typename T>
@@ -36,6 +39,8 @@ struct Planner {
         std::vector<Worker> workers = bb.getUnits(W_IDLE);
         std::vector<Depot> depots = bb.getUnits(D_IDLE);
         std::vector<Barrack> barracks = bb.getUnits(B_IDLE);
+        std::vector<Marine> marines = bb.getUnits(M_IDLE);
+
         for (int i = 0; i < requests.size(); i++) {
             if (requests[i].type == BWAPI::UnitTypes::Terran_SCV) {
                 assignUnitstoBehavior(managers[requests[i].idx], workers, requests[i], bb, controller);
@@ -45,6 +50,9 @@ struct Planner {
             }
             if (requests[i].type == BWAPI::UnitTypes::Terran_Barracks) {
                 assignUnitstoBehavior(managers[requests[i].idx], barracks, requests[i], bb, controller);
+            }
+            if (requests[i].type == BWAPI::UnitTypes::Terran_Marine) {
+                assignUnitstoBehavior(managers[requests[i].idx], marines, requests[i], bb, controller);
             }
         }
         

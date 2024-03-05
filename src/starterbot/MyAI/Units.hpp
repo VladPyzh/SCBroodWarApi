@@ -17,6 +17,7 @@ struct Unit : BaseUnit {
     State<T> state;
     int framesSinceUpdate = 0;
     bool isActive = false;
+    bool reserved_for_gas = 0;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
 
@@ -32,6 +33,7 @@ struct Unit : BaseUnit {
 
 typedef Unit<WorkerStates> WorkerUnit;
 typedef Unit<DepotStates> DepotUnit;
+typedef Unit<RefineryStates> RefineryUnit;
 typedef Unit<SupplyStates> SupplyUnit;
 typedef Unit<MarineStates> MarineUnit;
 typedef Unit<BarrackStates> BarrackUnit;
@@ -41,6 +43,7 @@ typedef Unit<BarrackStates> BarrackUnit;
 
 typedef std::shared_ptr<WorkerUnit> Worker;
 typedef std::shared_ptr<DepotUnit> Depot;
+typedef std::shared_ptr<RefineryUnit> Refinery;
 typedef std::shared_ptr<SupplyUnit> Supply;
 typedef std::shared_ptr<MarineUnit> Marine;
 typedef std::shared_ptr<BarrackUnit> Barrack;

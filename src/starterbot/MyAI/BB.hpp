@@ -9,6 +9,7 @@
 #include "Log.hpp"
 
 constexpr bool CARGO_DEBUG = false;
+constexpr bool REFINERY_DEBUG = true;
 
 struct BlackBoard {
     void init() {
@@ -52,6 +53,13 @@ struct BlackBoard {
                 }
                 break;
             }
+            case WorkerStates::W_GASING: {
+                //if (worker->unit->isCarryingGas() && worker->framesSinceUpdate > 10) {
+                //    worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
+                //    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in gasing" << std::endl)
+                //}
+                break;
+            }
             case WorkerStates::W_GOING_TO_BUILD: {
                 if (worker->unit->isConstructing() && worker->framesSinceUpdate > 10) {
                     worker->changeState(WorkerStates::W_BUILDING);
@@ -87,6 +95,21 @@ struct BlackBoard {
             } else if (depot->unit->isCompleted()) {
                 depot->changeState(DepotStates::D_IDLE);
             } else {
+                throw std::runtime_error("unknown state");
+            }
+        }
+        for (Refinery ref : m_refineries) {
+            if (ref->unit->isBeingConstructed()) {
+                ref->changeState(RefineryStates::R_CREATING);
+            }
+            else if (ref->unit->isCompleted() && ref->unit->getResources() > 0) {
+                ref->changeState(RefineryStates::R_IDLE);
+            } 
+            else if (ref->unit->isCompleted() && ref->unit->getResources() == 0) {
+                ref->changeState(RefineryStates::R_EMPTY);
+            }
+            else {
+                std::cerr << "asdF" << std::endl;
                 throw std::runtime_error("unknown state");
             }
         }
@@ -159,12 +182,29 @@ struct BlackBoard {
         return res;
     }
 
+    int gas() const {
+        int res = m_gas;
+        for (auto type : pending_units) {
+            res -= type.gasPrice();
+        }
+        return res;
+    }
+
     int freeUnitSlots() const {
         int res = m_unitSlotsAvailable - m_unitSlotsTaken;
         for (auto type : pending_units) {
             res -= type.supplyRequired();
         }
         return res;
+    }
+
+    bool haveRefinery() const {
+        for (auto ref : m_refineries) {
+            if (ref->state.inner == R_IDLE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     int unitSlotsAvailable() const {
@@ -212,6 +252,11 @@ struct BlackBoard {
         return m_barracks;
     }
 
+    template<>
+    std::vector<Marine> getUnits<MarineStates>() const {
+        return m_marines;
+    }
+
     MapTools m_mapTools;
 
     std::vector<Worker> m_workers;
@@ -220,9 +265,11 @@ struct BlackBoard {
     //std::vector<Enemy> m_enemy;
     std::vector<Barrack> m_barracks;
     std::vector<Marine> m_marines;
+    std::vector<Refinery> m_refineries;
 
     std::vector<BWAPI::UnitType> pending_units;
     int m_minerals;
+    int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
 };

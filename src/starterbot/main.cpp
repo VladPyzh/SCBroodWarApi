@@ -72,6 +72,8 @@ void PlayGame()
                 case BWAPI::EventType::UnitComplete: { handler.onUnitComplete(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitShow:     { handler.onUnitShow(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitHide:     { handler.onUnitHide(e.getUnit(), ai.blackBoard);     break; }
+                case BWAPI::EventType::UnitMorph:    { handler.onUnitMorph(e.getUnit(), ai.blackBoard);     break; }
+
             }
         }
 

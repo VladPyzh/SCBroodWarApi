@@ -27,6 +27,20 @@ struct Controller {
         return false;
     }
 
+    bool harvestGas(Worker worker) {
+        BWAPI::Unit closestRefinery = Tools::GetUnitOfType(BWAPI::UnitTypes::Terran_Refinery);
+        if (closestRefinery && closestRefinery->getResources() > 0) {
+            bool success = worker->unit->gather(closestRefinery);
+            DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << " gather return code " << success << std::endl)
+                BWAPI_LOG_IF_ERROR()
+                if (success) {
+                    worker->changeState(WorkerStates::W_GASING);
+                }
+            return success;
+        }
+        return false;
+    }
+
     bool returnCargo(Worker worker) {
         if (!worker->unit->isCarryingMinerals()) {
             return true;
@@ -69,10 +83,13 @@ struct Controller {
         BWAPI_LOG_IF_ERROR()
     }
 
-    void moveUnit(Marine marine, BWAPI::Position targetPosition) {
+    bool moveUnit(Marine marine, BWAPI::Position targetPosition) {
         //moveUnit<WorkerStates>(worker);
-        marine->unit->move(targetPosition);
-        marine->changeState(MarineStates::M_MOVING);
+        if (marine->unit->move(targetPosition)) {
+            marine->changeState(MarineStates::M_MOVING);
+            return true;
+        }
+        return false;
     }
 
     bool build(Worker worker, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPos, const BlackBoard& bb) {

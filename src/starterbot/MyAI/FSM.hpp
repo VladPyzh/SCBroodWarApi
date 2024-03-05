@@ -20,7 +20,8 @@ enum WorkerStates {
     W_BUILDING = 5,
     W_IS_TO_RETURN_CARGO = 6,
     W_RETURNING_CARGO = 7,
-    W_SCOUTING = 8
+    W_SCOUTING = 8,
+    W_GASING = 9,
 };
 
 std::ostream& operator << (std::ostream& out, WorkerStates x) {
@@ -33,6 +34,7 @@ std::ostream& operator << (std::ostream& out, WorkerStates x) {
     WRITE_ENUM(out, x, W_IS_TO_RETURN_CARGO);
     WRITE_ENUM(out, x, W_RETURNING_CARGO);
     WRITE_ENUM(out, x, W_SCOUTING);
+    WRITE_ENUM(out, x, W_GASING);
 
     return out;
 }
@@ -49,6 +51,21 @@ std::ostream& operator << (std::ostream& out, DepotStates x) {
     WRITE_ENUM(out, x, D_CREATING);
     WRITE_ENUM(out, x, D_IDLE);
     WRITE_ENUM(out, x, D_TRAINING);
+    return out;
+}
+
+enum RefineryStates {
+    R_UNKNOWN = 0,
+    R_CREATING = 1,
+    R_IDLE = 2,
+    R_EMPTY = 3
+};
+
+std::ostream& operator << (std::ostream& out, RefineryStates x) {
+    WRITE_ENUM(out, x, R_UNKNOWN);
+    WRITE_ENUM(out, x, R_CREATING);
+    WRITE_ENUM(out, x, R_IDLE);
+    WRITE_ENUM(out, x, R_EMPTY);
     return out;
 }
 
@@ -140,13 +157,14 @@ struct FSM {
 const FSM<WorkerStates> WORKER_FSM({
     {W_UNKNOWN, {W_CREATING, W_IDLE}},
     {W_CREATING, {W_IDLE}},
-    {W_IDLE, {W_MINING, W_GOING_TO_BUILD, W_IS_TO_RETURN_CARGO, W_SCOUTING}},
+    {W_IDLE, {W_MINING, W_GASING, W_GOING_TO_BUILD, W_IS_TO_RETURN_CARGO, W_SCOUTING}},
     {W_MINING, {W_IDLE, W_GOING_TO_BUILD, W_IS_TO_RETURN_CARGO}},
     {W_GOING_TO_BUILD, {W_BUILDING}},
     {W_BUILDING, {W_IDLE}},
     {W_IS_TO_RETURN_CARGO, {W_RETURNING_CARGO}},
     {W_RETURNING_CARGO, {W_IDLE}},
-    {W_SCOUTING, {W_IDLE}}
+    {W_SCOUTING, {W_IDLE}},
+    {W_GASING, {W_IDLE}}
 });
 
 const FSM<MarineStates> MARINE_FSM({
@@ -164,14 +182,18 @@ const FSM<BarrackStates> BARRACK_FSM({
     {B_TRAINING, {B_IDLE}},
 });
 
-
-
 const FSM<DepotStates> DEPOT_FSM({
     {D_UNKNOWN, {D_CREATING, D_IDLE}},
     {D_CREATING, {D_IDLE}},
     {D_IDLE, {D_TRAINING}},
     {D_TRAINING, {D_IDLE}}
 });
+
+const FSM<RefineryStates> REFINERY_FSM({
+    {R_UNKNOWN, {R_CREATING, R_IDLE}},
+    {R_CREATING, {R_IDLE}},
+    {R_IDLE, {R_EMPTY}}
+ });
 
 const FSM<SupplyStates> SUPPLY_FSM({
     {S_UNKNOWN, {S_CREATING, S_IDLE}},
@@ -191,6 +213,8 @@ template<>
 FSM<WorkerStates> provideFSM<WorkerStates>() { return WORKER_FSM; }
 template<>
 FSM<DepotStates> provideFSM<DepotStates>() { return DEPOT_FSM; }
+template<>
+FSM<RefineryStates> provideFSM<RefineryStates>() { return REFINERY_FSM; }
 template<>
 FSM<SupplyStates> provideFSM<SupplyStates>() { return SUPPLY_FSM; }
 template<>
