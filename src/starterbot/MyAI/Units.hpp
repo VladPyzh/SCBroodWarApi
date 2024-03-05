@@ -1,13 +1,23 @@
 
 #pragma once
 #include "FSM.hpp"
+#include "Log.hpp"
 #include <BWAPI.h>
 #include <memory>
 
+constexpr bool DEBUG_STATE_TRANSITIONS = true;
+
+struct BaseUnit {
+    virtual ~BaseUnit() {}
+};
+
 template<typename T>
-struct Unit {
+struct Unit : BaseUnit {
     BWAPI::Unit unit;
     State<T> state;
+    int framesSinceUpdate = 0;
+    bool isActive = false;
+    bool reserved_for_gas = 0;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
 
@@ -15,12 +25,15 @@ struct Unit {
         if (newState == state.inner) {
             return;
         }
+        framesSinceUpdate = 0;
+        DEBUG_LOG(DEBUG_STATE_TRANSITIONS, unit->getID() << "from state " << state.inner << " to state " << newState << std::endl)
         provideFSM<T>().update(state, newState);
     }
 };
 
 typedef Unit<WorkerStates> WorkerUnit;
 typedef Unit<DepotStates> DepotUnit;
+typedef Unit<RefineryStates> RefineryUnit;
 typedef Unit<SupplyStates> SupplyUnit;
 typedef Unit<MarineStates> MarineUnit;
 typedef Unit<BarrackStates> BarrackUnit;
@@ -30,6 +43,7 @@ typedef Unit<BarrackStates> BarrackUnit;
 
 typedef std::shared_ptr<WorkerUnit> Worker;
 typedef std::shared_ptr<DepotUnit> Depot;
+typedef std::shared_ptr<RefineryUnit> Refinery;
 typedef std::shared_ptr<SupplyUnit> Supply;
 typedef std::shared_ptr<MarineUnit> Marine;
 typedef std::shared_ptr<BarrackUnit> Barrack;

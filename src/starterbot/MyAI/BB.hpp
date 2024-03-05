@@ -6,7 +6,10 @@
 #include <BWAPI.h>
 #include <stdexcept>
 #include "MapTools.h"
+#include "Log.hpp"
 
+constexpr bool CARGO_DEBUG = false;
+constexpr bool REFINERY_DEBUG = true;
 
 struct BlackBoard {
     void init() {
@@ -15,9 +18,11 @@ struct BlackBoard {
     }
 
     void fetch() {
+        BWAPI_LOG_IF_ERROR()
         m_mapTools.onFrame();
 
         for (Worker worker : m_workers) {
+            worker->framesSinceUpdate++;
             switch (worker->state.inner) {
             case WorkerStates::W_UNKNOWN: {
                 if (worker->unit->isBeingConstructed()) {
@@ -35,19 +40,28 @@ struct BlackBoard {
                 break;
             }
             case WorkerStates::W_IDLE: {
-                if (worker->unit->isCarryingMinerals()) {
+                if (worker->unit->isCarryingMinerals() && worker->framesSinceUpdate > 10) {
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in idle" << std::endl)
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                 }
                 break;
             }
             case WorkerStates::W_MINING: {
-                if (worker->unit->isCarryingMinerals()) {
+                if (worker->unit->isCarryingMinerals() && worker->framesSinceUpdate > 10) {
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in mining" << std::endl)
                 }
                 break;
             }
+            case WorkerStates::W_GASING: {
+                //if (worker->unit->isCarryingGas() && worker->framesSinceUpdate > 10) {
+                //    worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
+                //    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in gasing" << std::endl)
+                //}
+                break;
+            }
             case WorkerStates::W_GOING_TO_BUILD: {
-                if (worker->unit->isConstructing()) {
+                if (worker->unit->isConstructing() && worker->framesSinceUpdate > 10) {
                     worker->changeState(WorkerStates::W_BUILDING);
                 }
                 break;
@@ -60,6 +74,7 @@ struct BlackBoard {
             }
             case WorkerStates::W_RETURNING_CARGO: {
                 if (!worker->unit->isCarryingMinerals()) {
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "delivered cargo" << std::endl)
                     worker->changeState(WorkerStates::W_IDLE);
                 }
                 break;
@@ -80,6 +95,21 @@ struct BlackBoard {
             } else if (depot->unit->isCompleted()) {
                 depot->changeState(DepotStates::D_IDLE);
             } else {
+                throw std::runtime_error("unknown state");
+            }
+        }
+        for (Refinery ref : m_refineries) {
+            if (ref->unit->isBeingConstructed()) {
+                ref->changeState(RefineryStates::R_CREATING);
+            }
+            else if (ref->unit->isCompleted() && ref->unit->getResources() > 0) {
+                ref->changeState(RefineryStates::R_IDLE);
+            } 
+            else if (ref->unit->isCompleted() && ref->unit->getResources() == 0) {
+                ref->changeState(RefineryStates::R_EMPTY);
+            }
+            else {
+                std::cerr << "asdF" << std::endl;
                 throw std::runtime_error("unknown state");
             }
         }
@@ -152,12 +182,29 @@ struct BlackBoard {
         return res;
     }
 
+    int gas() const {
+        int res = m_gas;
+        for (auto type : pending_units) {
+            res -= type.gasPrice();
+        }
+        return res;
+    }
+
     int freeUnitSlots() const {
         int res = m_unitSlotsAvailable - m_unitSlotsTaken;
         for (auto type : pending_units) {
             res -= type.supplyRequired();
         }
         return res;
+    }
+
+    bool haveRefinery() const {
+        for (auto ref : m_refineries) {
+            if (ref->state.inner == R_IDLE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     int unitSlotsAvailable() const {
@@ -172,23 +219,42 @@ struct BlackBoard {
         return BWAPI::UnitTypes::Terran_Marine;
     }
 
-    std::vector<Worker> getWorkers(WorkerStates state) const {
-        std::vector<Worker> res;
-        for (Worker worker : m_workers) {
-            if (worker->state.inner == state) {
-                res.push_back(worker);
+    template<typename T>
+    std::vector<std::shared_ptr<Unit<T>>> getUnits(T state) const {
+        std::vector<std::shared_ptr<Unit<T>>> res;
+
+        auto units = getUnits<T>();
+        for (std::shared_ptr<Unit<T>> unit : units) {
+            if (unit->state.inner == state && !unit->isActive) {
+                res.push_back(unit);
             }
         }
         return res;
     }
 
+    template<typename T>
+    std::vector<std::shared_ptr<Unit<T>>> getUnits() const {
+        throw std::runtime_error("not supported");
+    }
 
-    std::vector<Depot> getDepots() const {
+    template<>
+    std::vector<Worker> getUnits<WorkerStates>() const {
+        return m_workers;
+    }
+
+    template<>
+    std::vector<Depot> getUnits<DepotStates>() const {
         return m_depots;
     }
 
-    std::vector<Barrack> getBarracks() const {
+    template<>
+    std::vector<Barrack> getUnits<BarrackStates>() const {
         return m_barracks;
+    }
+
+    template<>
+    std::vector<Marine> getUnits<MarineStates>() const {
+        return m_marines;
     }
 
     MapTools m_mapTools;
@@ -199,9 +265,11 @@ struct BlackBoard {
     //std::vector<Enemy> m_enemy;
     std::vector<Barrack> m_barracks;
     std::vector<Marine> m_marines;
+    std::vector<Refinery> m_refineries;
 
     std::vector<BWAPI::UnitType> pending_units;
     int m_minerals;
+    int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
 };
