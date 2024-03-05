@@ -6,7 +6,9 @@
 #include <BWAPI.h>
 #include <stdexcept>
 #include "MapTools.h"
+#include "Log.hpp"
 
+constexpr bool CARGO_DEBUG = false;
 
 struct BlackBoard {
     void init() {
@@ -15,6 +17,7 @@ struct BlackBoard {
     }
 
     void fetch() {
+        BWAPI_LOG_IF_ERROR()
         m_mapTools.onFrame();
 
         for (Worker worker : m_workers) {
@@ -36,6 +39,7 @@ struct BlackBoard {
             }
             case WorkerStates::W_IDLE: {
                 if (worker->unit->isCarryingMinerals()) {
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in idle" << std::endl)
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
                 }
                 break;
@@ -43,6 +47,7 @@ struct BlackBoard {
             case WorkerStates::W_MINING: {
                 if (worker->unit->isCarryingMinerals()) {
                     worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in mining" << std::endl)
                 }
                 break;
             }
@@ -60,6 +65,7 @@ struct BlackBoard {
             }
             case WorkerStates::W_RETURNING_CARGO: {
                 if (!worker->unit->isCarryingMinerals()) {
+                    DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "delivered cargo" << std::endl)
                     worker->changeState(WorkerStates::W_IDLE);
                 }
                 break;
@@ -181,6 +187,7 @@ struct BlackBoard {
             if (unit->state.inner == state && !unit->isActive) {
                 res.push_back(unit);
             }
+            break;
         }
         return res;
     }

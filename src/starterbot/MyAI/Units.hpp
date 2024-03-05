@@ -1,9 +1,11 @@
 
 #pragma once
 #include "FSM.hpp"
+#include "Log.hpp"
 #include <BWAPI.h>
 #include <memory>
 
+constexpr bool DEBUG_STATE_TRANSITIONS = true;
 
 struct BaseUnit {
     virtual ~BaseUnit() {}
@@ -21,6 +23,7 @@ struct Unit : BaseUnit {
         if (newState == state.inner) {
             return;
         }
+        DEBUG_LOG(DEBUG_STATE_TRANSITIONS, unit->getID() << "from state " << state.inner << " to state " << newState << std::endl)
         provideFSM<T>().update(state, newState);
     }
 };

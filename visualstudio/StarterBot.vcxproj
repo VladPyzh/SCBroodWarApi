@@ -23,10 +23,16 @@
     <ClInclude Include="..\src\starterbot\MapTools.h" />
     <ClInclude Include="..\src\starterbot\MyAI\AI.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\BB.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\BehaviorBase.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\ConstructingBehavior.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\GatheringBehavior.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\ScoutingBehavior.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\TrainingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\bt.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Controller.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\EventHandler.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\FSM.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Log.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Planners.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Units.hpp" />
     <ClInclude Include="..\src\starterbot\ReplayParser.h" />

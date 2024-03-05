@@ -2,8 +2,12 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include "Log.hpp"
 
-// #define debug
+constexpr bool BT_STRUCTURE_DEBUG = false;
+constexpr bool BT_STEP_DEBUG = false;
+
+
 
 namespace bt {
 
@@ -17,11 +21,11 @@ struct node {
     virtual void start() {}
     virtual state step() = 0;
     virtual std::string type() = 0;
-    virtual void print() {
-        std::cerr << type();
+    virtual void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type());
     }
-    virtual void printStack() {
-        print();
+    virtual void printStack(bool force = false) {
+        print(force);
     }
 
     
@@ -37,18 +41,12 @@ struct node {
     }
 };
 
-
-#define DECLARE_STR_TYPE(classname) \
-std::string type() { return #classname; } 
-
 struct action_node : public node {
     DECLARE_STR_TYPE(action_node)
 
     action_node(std::function<void()> f): f(f) {}
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
         f();
         return state::success;
     }
@@ -64,9 +62,8 @@ struct action_once_node : public node {
         done = false;
     }
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
         if (done)
             return state::success;
         f();
@@ -81,21 +78,15 @@ struct wait_until_node : public node {
     DECLARE_STR_TYPE(wait_until_node)
 
     wait_until_node(std::function<bool()> f): f(f) {}
-    void start() {
-        done = false;
-    }
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
-        if (done || f()) {
-            done = true;
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
+        if (f()) {
             return state::success;
         }
         return state::running;
     }
     std::function<bool()> f;
-    bool done = false;
 };
 
 
@@ -103,18 +94,18 @@ struct sequencer_node : public node {
     DECLARE_STR_TYPE(sequencer_node)
     
     sequencer_node(std::vector<std::shared_ptr<node>>&& nodes): nodes{std::move(nodes)} {}
-    void print() {
-        std::cerr << type() << '(';
+    void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << '(');
         for (auto& n : nodes) {
-            n->print();
-            std::cerr << " -> ";
+            n->print(force);
+            DEBUG_LOG(BT_STRUCTURE_DEBUG || force, " -> ");
         }
-        std::cerr << ')';
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, ')');
     }
 
-    void printStack() {
-        std::cerr << type() << ' ' << current_idx << ' ';
-        nodes[current_idx]->printStack();
+    void printStack(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << ' ' << current_idx << ' ');
+        nodes[current_idx]->printStack(force);
     }
     
     void start() {
@@ -124,9 +115,8 @@ struct sequencer_node : public node {
         current_idx = 0;
     }
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
         while (current_idx < nodes.size()) {
             auto node = nodes[current_idx];
             state s = node->step();
@@ -145,17 +135,17 @@ struct selector_node : public node {
 
     selector_node(std::vector<std::shared_ptr<node>>&& nodes): nodes{std::move(nodes)} {}
 
-    void print() {
-        std::cerr << type() << '(';
+    void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << '(');
         for (auto& n : nodes) {
-            n->print();
-            std::cerr << " | ";
+            n->print(force);
+            DEBUG_LOG(BT_STRUCTURE_DEBUG || force,  " | ");
         }
-        std::cerr << ')';
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, ')');
     }
-    void printStack() {
-        std::cerr << type() << ' ' << current_idx << ' ';
-        nodes[current_idx]->printStack();
+    void printStack(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << ' ' << current_idx << ' ');
+        nodes[current_idx]->printStack(force);
     }
 
     void start() {
@@ -165,9 +155,8 @@ struct selector_node : public node {
         current_idx = 0;
     }
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
         while (current_idx < nodes.size()) {
             auto node = nodes[current_idx];
             state s = node->step();
@@ -182,14 +171,14 @@ struct selector_node : public node {
 };
 
 struct condition_node : public node {
+    DECLARE_STR_TYPE(condition_node)
+    
     condition_node(std::function<bool()> f): f(f) {}
-    std::string type() { return "condition_node"; }
-
+    
     void start() {}
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
         if (f()) {
             return state::success;
         }
@@ -200,21 +189,50 @@ struct condition_node : public node {
 
 
 struct repeater_node : public node {
+    DECLARE_STR_TYPE(repeater_node)
+
     repeater_node(std::shared_ptr<node> node): node(node) {}
-    std::string type() { return "repeater_node"; }
-    void print() {
-        std::cerr << type() << '(';
-        node->print();
-        std::cerr << ')';
+
+    void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << '(');
+        node->print(force);
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, ')');
     }
     void start() {
         node->start();
     }
     state step() {
-        #ifdef debug
-            std::cerr << type() << std::endl;
-        #endif
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
         if (node->step() != state::running) {
+            node->start();
+        }
+        return state::running;
+    }
+    std::shared_ptr<node> node;
+};
+
+struct repeate_until_node : public node {
+    DECLARE_STR_TYPE(repeate_until_node)
+    
+    repeate_until_node(std::shared_ptr<node> node): node(node) {}
+    
+    void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << '(');
+        node->print(force);
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, ')');
+    }
+    void start() {
+        node->start();
+    }
+    state step() {
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
+        auto s = node->step();
+        if (s == state::success) {
+            return s;
+        }
+        if (s != state::running) {
             node->start();
         }
         return state::running;
@@ -237,6 +255,10 @@ std::shared_ptr<node> wait_until(std::function<bool()> f) {
 
 std::shared_ptr<node> repeat_until_success(std::function<bool()> f) {
     return wait_until(std::move(f));
+}
+
+std::shared_ptr<node> repeat_node_until_success(std::shared_ptr<node> node) {
+    return std::make_shared<repeate_until_node>(std::move(node));
 }
 
 std::shared_ptr<node> if_true(std::function<bool()> f) {
