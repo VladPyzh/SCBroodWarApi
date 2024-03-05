@@ -23,7 +23,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
         int cost_mineral = type.mineralPrice();
         int cost_gas = type.gasPrice();
 
-        return have_minerals >= cost_mineral; // && have_gas >= cost_gas;
+        return have_minerals >= cost_mineral + 20; // && have_gas >= cost_gas;
     }
 
     bool shouldConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
@@ -71,8 +71,9 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
                             return cur_build_index == tree_for_building_idx;
                         }),
                         bt::if_true([worker, &bb = std::as_const(bb), this, tree_for_building_idx]() {
+                            // auto pos = BWAPI::Broodwar->getBuildLocation(build_order[tree_for_building_idx], positions[tree_for_building_idx], 64, false);
                             bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
-                                worker->unit->canBuild(build_order[tree_for_building_idx], positions[build_order[tree_for_building_idx]]);
+                                worker->unit->canBuild(build_order[tree_for_building_idx], positions[tree_for_building_idx]);
                             BWAPI_LOG_IF_ERROR()
                             return res;
                         }),
