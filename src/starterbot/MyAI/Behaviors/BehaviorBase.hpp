@@ -12,7 +12,7 @@
 #include <cassert>
 
 
-constexpr bool ASSIGN_BT_DEBUG = true;
+constexpr bool ASSIGN_BT_DEBUG = false;
 constexpr bool UPDATE_BT_DEBUG = false;
 
 struct Behavior {
@@ -54,7 +54,7 @@ struct TreeBasedBehavior: public Behavior {
             auto status = tree->step();
 
             if (status == bt::state::failure) {
-                std::cerr << units[i]->unit->getID() << ' ' << units[i]->state.inner << '\n';
+                std::cerr << units[i]->unit->getID() << ' ' << units[i]->state.inner << ' ' << type() << '\n';
                 tree->print(true);
                 std::cerr << '\n';
                 tree->printStack(true);

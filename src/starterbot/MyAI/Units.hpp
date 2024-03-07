@@ -37,6 +37,7 @@ typedef Unit<RefineryStates> RefineryUnit;
 typedef Unit<SupplyStates> SupplyUnit;
 typedef Unit<MarineStates> MarineUnit;
 typedef Unit<BarrackStates> BarrackUnit;
+typedef Unit<EnemyStates> EnemyUnit;
 
 //typedef Unit<VisibleEnemyStates> VisibleEnemyUnit;
 
@@ -47,6 +48,7 @@ typedef std::shared_ptr<RefineryUnit> Refinery;
 typedef std::shared_ptr<SupplyUnit> Supply;
 typedef std::shared_ptr<MarineUnit> Marine;
 typedef std::shared_ptr<BarrackUnit> Barrack;
+typedef std::shared_ptr<EnemyUnit> Enemy;
 
 
 //typedef std::shared_ptr<VisibleEnemyUnit> VisibleEnemy;

@@ -107,4 +107,16 @@ struct Controller {
         }
     }
 
+    bool attack(Marine marine, Enemy enemy) {
+        if (marine->unit->attack(enemy->unit)) {
+            DEBUG_LOG(CONTROLLER_DEBUG, "marine unit " << marine->unit->getID() << "is attacking " << enemy->unit->getID() << std::endl)
+            marine->changeState(MarineStates::M_ATTACKING);
+            BWAPI_LOG_IF_ERROR()
+            return 1;
+        } else {
+            BWAPI_LOG_IF_ERROR()
+            return 0;
+        }
+    }
+
 };

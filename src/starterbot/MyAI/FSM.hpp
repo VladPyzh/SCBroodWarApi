@@ -88,7 +88,8 @@ enum MarineStates {
     M_CREATING = 1,
     M_IDLE = 2,
     M_MOVING = 3,
-    M_PROTECTING = 4
+    M_PROTECTING = 4,
+    M_ATTACKING = 5
 };
 
 std::ostream& operator << (std::ostream& out, MarineStates x) {
@@ -97,6 +98,7 @@ std::ostream& operator << (std::ostream& out, MarineStates x) {
     WRITE_ENUM(out, x, M_IDLE);
     WRITE_ENUM(out, x, M_MOVING);
     WRITE_ENUM(out, x, M_PROTECTING);
+    WRITE_ENUM(out, x, M_ATTACKING);
     return out;
 }
 
@@ -115,14 +117,14 @@ std::ostream& operator << (std::ostream& out, BarrackStates x) {
     return out;
 }
 
-enum VisibleEnemyStates {
-    V_UNKNOWN = 0,
-    V_VISIBLE = 1
+enum EnemyStates {
+    E_UNKNOWN = 0,
+    E_VISIBLE = 1
 };
 
-std::ostream& operator << (std::ostream& out, VisibleEnemyStates x) {
-    WRITE_ENUM(out, x, V_UNKNOWN);
-    WRITE_ENUM(out, x, V_VISIBLE);
+std::ostream& operator << (std::ostream& out, EnemyStates x) {
+    WRITE_ENUM(out, x, E_UNKNOWN);
+    WRITE_ENUM(out, x, E_VISIBLE);
     return out;
 }
 
@@ -170,9 +172,10 @@ const FSM<WorkerStates> WORKER_FSM({
 const FSM<MarineStates> MARINE_FSM({
     {M_UNKNOWN, {M_CREATING, M_IDLE}},
     {M_CREATING, {M_IDLE}},
-    {M_IDLE, {M_MOVING, M_PROTECTING}},
+    {M_IDLE, {M_MOVING, M_PROTECTING, M_ATTACKING}},
     {M_MOVING, {M_PROTECTING, M_IDLE}},
     {M_PROTECTING, {M_IDLE, M_MOVING}},
+    {M_ATTACKING, {M_IDLE}}
  });
 
 const FSM<BarrackStates> BARRACK_FSM({
@@ -201,9 +204,9 @@ const FSM<SupplyStates> SUPPLY_FSM({
     {S_IDLE, {}}
 });
 
-const FSM<VisibleEnemyStates> ENEMY_FSM({
-    {V_VISIBLE, {V_UNKNOWN}},
-    {V_UNKNOWN, {V_VISIBLE}}
+const FSM<EnemyStates> ENEMY_FSM({
+    {E_VISIBLE, {E_UNKNOWN}},
+    {E_UNKNOWN, {E_VISIBLE}}
 });
 
 template<typename T>
@@ -218,7 +221,7 @@ FSM<RefineryStates> provideFSM<RefineryStates>() { return REFINERY_FSM; }
 template<>
 FSM<SupplyStates> provideFSM<SupplyStates>() { return SUPPLY_FSM; }
 template<>
-FSM<VisibleEnemyStates> provideFSM<VisibleEnemyStates>() { return ENEMY_FSM; }
+FSM<EnemyStates> provideFSM<EnemyStates>() { return ENEMY_FSM; }
 template<>
 FSM<MarineStates> provideFSM<MarineStates>() { return MARINE_FSM; }
 template<>

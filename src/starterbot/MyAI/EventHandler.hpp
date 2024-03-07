@@ -55,25 +55,16 @@ struct EventHandler {
 	
 
 	void onUnitComplete(BWAPI::Unit unit, BlackBoard& bb) {
-		// update unit status
 		
-		// maybe we can fetch everything completed in bb itself????
 	}
-	void onUnitShow(BWAPI::Unit unit, BlackBoard& bb) {
-		// update unit status
-		/*
-		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
-			bb.m_enemy.push_back(std::make_shared<VisibleEnemyUnit>(unit));
-		}
-		else {
 
+	void onUnitShow(BWAPI::Unit unit, BlackBoard& bb) {
+		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
+			bb.m_enemies.push_back(std::make_shared<EnemyUnit>(unit));
 		}
-		*/
-		// maybe we can fetch everything completed in bb itself????
 	}
 	void onUnitHide(BWAPI::Unit unit, BlackBoard& bb) {
 		// update unit status
 
-		// maybe we can fetch everything completed in bb itself????
 	}
 };

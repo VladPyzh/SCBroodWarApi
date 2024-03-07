@@ -11,14 +11,20 @@ struct MoveOnRamp : public TreeBasedBehavior<MarineStates> {
     BWAPI::Position ramp_location = BWAPI::Position(54 * 32, 11 * 32);
 
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
-        return bt::sequence({
-            bt::repeat_until_success([&controller, marine, &bb = std::as_const(bb), this]() {
-                return controller.moveUnit(marine, ramp_location);
-            }),
-            bt::wait_until([marine]() {
-                return marine->state.inner == M_IDLE;
-            })
-        });
+        return
+            bt::one_of({
+                bt::if_true([marine, this]() {
+                    return marine->unit->getPosition().getApproxDistance(ramp_location) < 6 * 32;
+                }),
+                bt::sequence({
+                    bt::repeat_until_success([&controller, marine, &bb = std::as_const(bb), this]() {
+                        return controller.moveUnit(marine, ramp_location);
+                    }),
+                    bt::wait_until([marine]() {
+                        return marine->state.inner == M_IDLE;
+                    })
+                }),
+            });
     }
 };
 

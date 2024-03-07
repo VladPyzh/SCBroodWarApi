@@ -1,6 +1,8 @@
 
 #include "BehaviorBase.hpp"
 
+const bool GEYSER_DEBUG = false;
+
 BWAPI::TilePosition findClosestVespeneGeyser(BWAPI::Unit worker) {
     BWAPI::Unit closestGeyser = nullptr;
     double minDistance = std::numeric_limits<double>::max();
@@ -15,7 +17,7 @@ BWAPI::TilePosition findClosestVespeneGeyser(BWAPI::Unit worker) {
         }
     }
 
-    DEBUG_LOG(true, closestGeyser->getTilePosition().x << " " << closestGeyser->getTilePosition().y << std::endl)
+    DEBUG_LOG(GEYSER_DEBUG, closestGeyser->getTilePosition().x << " " << closestGeyser->getTilePosition().y << std::endl)
 
 
     return closestGeyser->getTilePosition();
@@ -109,12 +111,13 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
                                 bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
                                     worker->unit->canBuild(build_order[tree_for_building_idx], position);
                                 BWAPI_LOG_IF_ERROR()
+                                return res;
                             }
                             else {
-                            bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
-                                worker->unit->canBuild(build_order[tree_for_building_idx], positions[tree_for_building_idx]);
-                            BWAPI_LOG_IF_ERROR()
-                            return res;
+                                bool res = canConstruct(bb, build_order[tree_for_building_idx]) &&
+                                    worker->unit->canBuild(build_order[tree_for_building_idx], positions[tree_for_building_idx]);
+                                BWAPI_LOG_IF_ERROR()
+                                return res;
                             }
                         }),
                         bt::if_true([&controller, worker, &bb = std::as_const(bb), this, tree_for_building_idx]() {

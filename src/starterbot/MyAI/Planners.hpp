@@ -3,6 +3,7 @@
 #include "Behaviors/GatheringBehavior.hpp"
 #include "Behaviors/TrainingBehavior.hpp"
 #include "Behaviors/MarineBehavior.hpp"
+#include "Behaviors/AttackBehavior.hpp"
 
 struct Planner {
     Planner(): managers() {
@@ -12,6 +13,7 @@ struct Planner {
         // managers.emplace_back(std::make_unique<ScoutEnemyBaseBehaviour>());
         managers.emplace_back(std::make_unique<TrainMarinesBehaviour>());
         managers.emplace_back(std::make_unique<TrainWorkersBehaviour>());
+        managers.emplace_back(std::make_unique<AttackBehavior>());
         managers.emplace_back(std::make_unique<MoveOnRamp>()); // stupidest thing
     }
 

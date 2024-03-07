@@ -9,7 +9,7 @@
 #include "Log.hpp"
 
 constexpr bool CARGO_DEBUG = false;
-constexpr bool REFINERY_DEBUG = true;
+constexpr bool REFINERY_DEBUG = false;
 
 struct BlackBoard {
     void init() {
@@ -109,7 +109,6 @@ struct BlackBoard {
                 ref->changeState(RefineryStates::R_EMPTY);
             }
             else {
-                std::cerr << "asdF" << std::endl;
                 throw std::runtime_error("unknown state");
             }
         }
@@ -159,6 +158,19 @@ struct BlackBoard {
                 }
                 break;
             }
+           case MarineStates::M_ATTACKING: {
+                if (!marine->unit->isAttacking() && marine->framesSinceUpdate > 10) {
+                    marine->changeState(MarineStates::M_IDLE);
+                }
+                break;
+            }
+            }
+        }
+        for (Enemy enemy : m_enemies) {
+            if (enemy->unit->isVisible(BWAPI::Broodwar->self())) {
+                enemy->changeState(EnemyStates::E_VISIBLE);
+            } else {
+                enemy->changeState(EnemyStates::E_UNKNOWN);
             }
         }
     
@@ -248,6 +260,11 @@ struct BlackBoard {
     }
 
     template<>
+    std::vector<Enemy> getUnits<EnemyStates>() const {
+        return m_enemies;
+    }
+
+    template<>
     std::vector<Barrack> getUnits<BarrackStates>() const {
         return m_barracks;
     }
@@ -262,7 +279,7 @@ struct BlackBoard {
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;
     std::vector<Supply> m_supplies;
-    //std::vector<Enemy> m_enemy;
+    std::vector<Enemy> m_enemies;
     std::vector<Barrack> m_barracks;
     std::vector<Marine> m_marines;
     std::vector<Refinery> m_refineries;
