@@ -306,4 +306,8 @@ std::shared_ptr<node> one_of(std::vector<std::shared_ptr<node>>&& nodes) {
     return std::make_shared<selector_node>(std::move(nodes));
 }
 
+std::shared_ptr<node> fail() {
+    return if_true([](){ return false; });
+}
+
 }

@@ -46,7 +46,7 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
         }
     }
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
-        auto res = bt::sequence({
+        auto res = bt::repeat_node_until_success({
                 bt::once([&controller, marine]() {
                     BWAPI::Position start_position = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
                     BWAPI::Position target_position = BWAPI::Position();
@@ -55,21 +55,53 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
                     controller.moveUnit(marine, target_position);
                 }),
                 bt::repeat_node_until_success(bt::one_of({
-                    bt::if_true([&bb = std::as_const(bb), &controller, marine](){
-                        auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
-                        int idx = -1;
-                        for (int i = 0; i < enemies.size(); i++) {
-                            auto cur_dist = enemies[i]->unit->getPosition().getApproxDistance(marine->unit->getPosition());
-                            if (idx == -1 || cur_dist < enemies[idx]->unit->getPosition().getApproxDistance(marine->unit->getPosition())) {
-                                idx = i;
+                    bt::sequence({
+                        bt::if_true([marine, this](){
+                            auto unitsNearby = marine->unit->getUnitsInRadius(32 * 3);
+                            int cntMarines = 0;
+                            for (auto unit : unitsNearby) {
+                                if (unit->getType() == marine->unit->getType()) {
+                                    cntMarines++;
+                                }
                             }
-                        }
-                        if (idx != -1) {
-                            controller.attack(marine, enemies[idx]);
-                            return true;
-                        } else {
-                            return false;
-                        }
+                            int marinesInSquad = getUnitGroup(marine).size();
+                            
+                            return cntMarines != marinesInSquad; 
+                        }),
+                        bt::once([&controller, marine, this]() {
+                            auto marinesInSquad = getUnitGroup(marine);
+                            controller.move(marine, avg);
+                        }),
+                        bt::repeat_until_success([marine, this](){
+                            for (auto unit : unitsNearby) {
+                                if (unit->getType() == marine->unit->getType()) {
+                                    cntMarines++;
+                                }
+                            }
+                            int marinesInSquad = getUnitGroup(marine).size();
+                            return cntMarines == marinesInSquad; 
+                        }),
+                        bt::fail()
+                    }),
+                    bt::sequence({
+                        bt::if_true([&bb = std::as_const(bb), &controller, marine](){
+                            auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
+                            int idx = -1;
+                            for (int i = 0; i < enemies.size(); i++) {
+                                auto cur_dist = enemies[i]->unit->getPosition().getApproxDistance(marine->unit->getPosition());
+                                if (idx == -1 || cur_dist < enemies[idx]->unit->getPosition().getApproxDistance(marine->unit->getPosition())) {
+                                    idx = i;
+                                }
+                            }
+                            if (idx != -1) {
+                                controller.attack(marine, enemies[idx]);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }),
+                        bt::if_true([marine]() { return marine->state.inner == MarineStates::M_IDLE; }),
+                        bt::fail()
                     }),
                     bt::if_true([marine]() { return marine->state.inner == MarineStates::M_IDLE; })
                 }))
@@ -77,8 +109,5 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
         return res;
     }
 
-
-    int current_marines_on_enemy = 0;
-    int current_enemy_index = 0;
     std::vector<Enemy> nearbyEnemies;
 };

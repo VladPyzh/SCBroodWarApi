@@ -77,6 +77,25 @@ struct TreeBasedBehavior: public Behavior {
         }
         DEBUG_LOG(UPDATE_BT_DEBUG, '\n');
     }
+
+    std::vector<std::shared_ptr<Unit<T>> getUnitGroup(std::shared_ptr<Unit<T>> unit) {
+        int idx = -1;
+        for (int i = 0; i < units.size(); i++) {
+            if (units[i]->unit->getID() == unit->unit->getID()) {
+                idx = i;
+                break;
+            }
+        }
+        std::vector<std::shared_ptr<Unit<T>> res;
+        for (int i = 0; i < units.size(); i++) {
+            if (groupId[i] == groupId[idx]) {
+                res.push_back(units[i]);
+            }
+        }
+        return res;
+    }
+
     std::vector<std::shared_ptr<bt::node>> trees;
     std::vector<std::shared_ptr<Unit<T>>> units;
+    std::vector<int> groupId;
 };
