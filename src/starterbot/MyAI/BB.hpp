@@ -12,7 +12,7 @@ constexpr bool CARGO_DEBUG = false;
 constexpr bool REFINERY_DEBUG = false;
 constexpr bool WORKERS_DEBUG = false;
 constexpr bool MARINES_DEBUG = false;
-constexpr bool ENEMIES_DEBUG = false;
+constexpr bool ENEMIES_DEBUG = true;
 
 struct BlackBoard {
     void init() {
@@ -174,6 +174,7 @@ struct BlackBoard {
         }
         for (Enemy enemy : m_enemies) {
            enemy->highlight();
+           enemy->framesSinceUpdate++;
             if (enemy->unit->isVisible(BWAPI::Broodwar->self())) {
                 enemy->changeState(EnemyStates::E_VISIBLE);
             } else if (enemy->framesSinceUpdate > 10) {
@@ -272,7 +273,7 @@ struct BlackBoard {
             if (m_enemies[i]->unit->getID() == unitId) {
                 m_enemies[i]->isActive = false;
                 m_enemies.erase(m_enemies.begin() + i);
-                return;
+                //return;
             }
         }
         for (int i = 0; i < m_barracks.size(); i++) {

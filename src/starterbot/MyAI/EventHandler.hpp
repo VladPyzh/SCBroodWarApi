@@ -58,11 +58,18 @@ struct EventHandler {
 		
 	}
 
+	void onDiscovery(BWAPI::Unit unit, BlackBoard& bb) {
+		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
+			bb.m_enemies.push_back(std::make_shared<EnemyUnit>(unit));
+		}
+	}
+	/*
 	void onUnitShow(BWAPI::Unit unit, BlackBoard& bb) {
 		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
 			bb.m_enemies.push_back(std::make_shared<EnemyUnit>(unit));
 		}
 	}
+	*/
 	void onUnitHide(BWAPI::Unit unit, BlackBoard& bb) {
 		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
 			bb.removeUnit(unit->getID());

@@ -7,18 +7,18 @@ struct AttackBehavior: public TreeBasedBehavior<MarineStates> {
         auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
         int totalEnemies = 0;
         for (Enemy enemy : enemies) {
-            // if (32 * 40 < enemy->unit->getPosition().getApproxDistance(BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()))) {
+            if (12 > enemy->unit->getPosition().getApproxDistance(BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()))) {
                 totalEnemies++;
-            // }
+            }
         }
         return QuotaRequest{ 1, 4 * totalEnemies - (int) trees.size(), BWAPI::UnitTypes::Terran_Marine };
     }
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
         auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
         for (Enemy enemy : enemies) {
-            // if (32 * 40 < enemy->unit->getPosition().getApproxDistance(BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()))) {
+            if (6 > enemy->unit->getPosition().getApproxDistance(BWAPI::Position(marine->unit->getPosition()))) {
                 nearbyEnemies.push_back(enemy);
-            // }
+            }
         }
         int idx = rand() % nearbyEnemies.size();
         auto res = bt::once([&controller, idx, marine, this]() {
@@ -39,7 +39,7 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
 
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
         int marines = bb.getUnits(MarineStates::M_IDLE).size();
-        if (marines > 5) {
+        if (marines > 10) {
             return QuotaRequest{ 100, marines, BWAPI::UnitTypes::Terran_Marine };
         } else {
             return QuotaRequest{ 0, 0, BWAPI::UnitTypes::Terran_Marine };

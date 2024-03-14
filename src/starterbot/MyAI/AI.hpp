@@ -21,6 +21,8 @@ public:
 		
 		// Enable the flag that tells BWAPI top let users enter input while bot plays
 		BWAPI::Broodwar->enableFlag(BWAPI::Flag::UserInput);
+		std::cerr << "FLAGS IS " << BWAPI::Broodwar->isFlagEnabled(BWAPI::Flag::CompleteMapInformation) << std::endl;
+
 
 		blackBoard.init();
 	}

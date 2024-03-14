@@ -71,7 +71,8 @@ void PlayGame()
                 case BWAPI::EventType::UnitCreate:   { handler.onUnitCreate(e.getUnit(), ai.blackBoard);       break; }
                 case BWAPI::EventType::UnitComplete: { handler.onUnitComplete(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitDestroy:  { handler.onUnitDestroyed(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitShow:     { handler.onUnitShow(e.getUnit(), ai.blackBoard);     break; }
+                //case BWAPI::EventType::UnitShow:     { handler.onUnitShow(e.getUnit(), ai.blackBoard);     break; }
+                case BWAPI::EventType::UnitDiscover: { handler.onDiscovery(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitHide:     { handler.onUnitHide(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitRenegade:     { handler.onUnitHide(e.getUnit(), ai.blackBoard);     break; }
                 case BWAPI::EventType::UnitMorph:    { handler.onUnitMorph(e.getUnit(), ai.blackBoard);     break; }
