@@ -8,7 +8,7 @@ struct MoveOnRamp : public TreeBasedBehavior<MarineStates> {
         return QuotaRequest{ 100, 1, BWAPI::UnitTypes::Terran_Marine };
     }
 
-    BWAPI::Position ramp_location = BWAPI::Position(54 * 32, 11 * 32);
+    BWAPI::Position ramp_location = (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::Position(54 * 32, 11 * 32) : BWAPI::Position(42 * 32, 117 * 32);
 
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
         return

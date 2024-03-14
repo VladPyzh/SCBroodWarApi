@@ -12,7 +12,7 @@ constexpr bool CARGO_DEBUG = false;
 constexpr bool REFINERY_DEBUG = false;
 constexpr bool WORKERS_DEBUG = false;
 constexpr bool MARINES_DEBUG = false;
-constexpr bool ENEMIES_DEBUG = true;
+constexpr bool ENEMIES_DEBUG = false;
 
 struct BlackBoard {
     void init() {
