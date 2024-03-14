@@ -151,19 +151,21 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
                 }))
             });
         } else {
-            return bt::sequence({
-                bt::if_true([&bb = std::as_const(bb), this]() {
-                    return shouldConstruct(bb, BWAPI::UnitTypes::Terran_Supply_Depot);
-                }),
-                bt::repeat_until_success([worker, &controller, &bb]() {
-                    BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
-                    int maxBuildRange = 64;
-                    return controller.build(worker, BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::Broodwar->getBuildLocation(BWAPI::UnitTypes::Terran_Supply_Depot, desiredPos, maxBuildRange, false), bb);
-                }),
-                bt::wait_until([worker]() {
-                    return worker->state.inner == WorkerStates::W_IDLE;
+            return bt::try_node(    
+                bt::sequence({
+                    bt::if_true([&bb = std::as_const(bb), this]() {
+                        return shouldConstruct(bb, BWAPI::UnitTypes::Terran_Supply_Depot);
+                    }),
+                    bt::repeat_until_success([worker, &controller, &bb]() {
+                        BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
+                        int maxBuildRange = 64;
+                        return controller.build(worker, BWAPI::UnitTypes::Terran_Supply_Depot, BWAPI::Broodwar->getBuildLocation(BWAPI::UnitTypes::Terran_Supply_Depot, desiredPos, maxBuildRange, false), bb);
+                    }),
+                    bt::wait_until([worker]() {
+                        return worker->state.inner == WorkerStates::W_IDLE;
+                    })
                 })
-            });
+            );
         }
         // std::vector<std::shared_ptr<bt::node>> build_order_nodes;
         // for (int i = 0; i < build_order.size(); i++) {

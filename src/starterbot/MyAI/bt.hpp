@@ -240,6 +240,31 @@ struct repeate_until_node : public node {
     std::shared_ptr<node> node;
 };
 
+struct try_node_node : public node {
+    DECLARE_STR_TYPE(try_node_node)
+    
+    try_node_node(std::shared_ptr<node> node): node(node) {}
+    
+    void print(bool force = false) {
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type() << '(');
+        node->print(force);
+        DEBUG_LOG(BT_STRUCTURE_DEBUG || force, ')');
+    }
+    void start() {
+        node->start();
+    }
+    state step() {
+        DEBUG_LOG(BT_STEP_DEBUG, type() << '\n');
+
+        auto s = node->step();
+        if (s != state::running) {
+            return state::success;
+        }
+        return state::running;
+    }
+    std::shared_ptr<node> node;
+};
+
 
 std::shared_ptr<node> action(std::function<void()> f) {
     return std::make_shared<action_node>(std::move(f));
@@ -263,6 +288,10 @@ std::shared_ptr<node> repeat_node_until_success(std::shared_ptr<node> node) {
 
 std::shared_ptr<node> if_true(std::function<bool()> f) {
     return std::make_shared<condition_node>(std::move(f));
+}
+
+std::shared_ptr<node> try_node(std::shared_ptr<node> node) {
+    return std::make_shared<try_node_node>(std::move(node));
 }
 
 std::shared_ptr<node> sequence(std::vector<std::shared_ptr<node>>&& nodes) {

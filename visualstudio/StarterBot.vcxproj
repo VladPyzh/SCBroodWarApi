@@ -26,6 +26,7 @@
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\BehaviorBase.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\ConstructingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\GatheringBehavior.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\MarineBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\ScoutingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\TrainingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\bt.hpp" />

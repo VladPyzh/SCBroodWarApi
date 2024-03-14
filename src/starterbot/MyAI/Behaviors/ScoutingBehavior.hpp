@@ -4,7 +4,7 @@ struct ScoutEnemyBaseBehaviour : public TreeBasedBehavior<WorkerStates> {
     DECLARE_STR_TYPE(ScoutEnemyBaseBehaviour)
    
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
-        if (!started)
+        if (!started && bb.getUnits<WorkerStates>().size() > 10)
             return QuotaRequest{ 100, 1, BWAPI::UnitTypes::Terran_SCV };
         else
             return QuotaRequest{ 100, 0, BWAPI::UnitTypes::Terran_SCV };

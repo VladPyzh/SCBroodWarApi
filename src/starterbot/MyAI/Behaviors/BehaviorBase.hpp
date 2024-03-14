@@ -49,6 +49,12 @@ struct TreeBasedBehavior: public Behavior {
         std::vector<int> to_delete;
         DEBUG_LOG(UPDATE_BT_DEBUG, type() << ' ');
         for (int i = 0; i < trees.size(); i++) {
+            if (!units[i]->isActive) {
+                trees.erase(trees.begin() + i);
+                units.erase(units.begin() + i);
+                i--;
+                continue;
+            }
             auto tree = trees[i];
             DEBUG_LOG(UPDATE_BT_DEBUG, units[i]->unit->getID() << ' ' << units[i]->state.inner << ", ");
             auto status = tree->step();

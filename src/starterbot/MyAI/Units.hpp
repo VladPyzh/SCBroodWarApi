@@ -5,7 +5,7 @@
 #include <BWAPI.h>
 #include <memory>
 
-constexpr bool DEBUG_STATE_TRANSITIONS = true;
+constexpr bool DEBUG_STATE_TRANSITIONS = false;
 
 struct BaseUnit {
     virtual ~BaseUnit() {}
@@ -17,7 +17,7 @@ struct Unit : BaseUnit {
     State<T> state;
     int framesSinceUpdate = 0;
     bool isActive = false;
-    bool reserved_for_gas = 0;
+    bool isHighLighted = false;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
 
@@ -28,6 +28,14 @@ struct Unit : BaseUnit {
         framesSinceUpdate = 0;
         DEBUG_LOG(DEBUG_STATE_TRANSITIONS, unit->getID() << "from state " << state.inner << " to state " << newState << std::endl)
         provideFSM<T>().update(state, newState);
+    }
+
+    void highlight() {
+        if (isHighLighted) {
+            BWAPI::Position topLeft(unit->getLeft(), unit->getTop());
+            BWAPI::Position bottomRight(unit->getRight(), unit->getBottom());
+            BWAPI::Broodwar->drawBoxMap(topLeft, bottomRight, BWAPI::Colors::White);
+        }
     }
 };
 

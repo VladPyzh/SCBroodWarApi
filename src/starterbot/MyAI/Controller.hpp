@@ -3,7 +3,8 @@
 #include "Units.hpp"
 #include "../Tools.h"
 
-constexpr bool CONTROLLER_DEBUG = true;
+constexpr bool CONTROLLER_DEBUG = false;
+constexpr bool CONTROLLER_DEBUG_ATTACK = true;
 
 /// Uses bwapi to do some actions
 struct Controller {
@@ -18,7 +19,6 @@ struct Controller {
         if (closestMineral && closestMineral->getResources() > 0) { 
             bool success = worker->unit->gather(closestMineral); 
             DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << " gather return code " << success << std::endl)
-            BWAPI_LOG_IF_ERROR()
             if (success) {
                 worker->changeState(WorkerStates::W_MINING);
             }
@@ -32,7 +32,6 @@ struct Controller {
         if (closestRefinery && closestRefinery->getResources() > 0) {
             bool success = worker->unit->gather(closestRefinery);
             DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << " gather return code " << success << std::endl)
-                BWAPI_LOG_IF_ERROR()
                 if (success) {
                     worker->changeState(WorkerStates::W_GASING);
                 }
@@ -46,18 +45,15 @@ struct Controller {
             return true;
         }
         if (worker->unit->returnCargo()) {
-            BWAPI_LOG_IF_ERROR()
             DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << " returning cargo" << std::endl)
             worker->changeState(WorkerStates::W_RETURNING_CARGO);
             return true;
         }
-        BWAPI_LOG_IF_ERROR()
         return false;
     }
 
     bool train(Depot depot, BWAPI::UnitType unitType, const BlackBoard& bb) {
         if (depot->unit->train(unitType)) {
-            DEBUG_LOG(CONTROLLER_DEBUG, "depot training \n")
             depot->changeState(DepotStates::D_TRAINING);
             addPendingUnit(bb, unitType);
             return true;
@@ -80,7 +76,6 @@ struct Controller {
         DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << "moving \n")
         worker->unit->move(targetPosition);
         worker->changeState(WorkerStates::W_SCOUTING);
-        BWAPI_LOG_IF_ERROR()
     }
 
     bool moveUnit(Marine marine, BWAPI::Position targetPosition) {
@@ -98,23 +93,20 @@ struct Controller {
             DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << "is building " << buildingType << std::endl)
             worker->changeState(WorkerStates::W_GOING_TO_BUILD);
             addPendingUnit(bb, buildingType);
-            BWAPI_LOG_IF_ERROR()
             return 1;
         }
         else {
-            BWAPI_LOG_IF_ERROR()
             return 0;
         }
     }
 
     bool attack(Marine marine, Enemy enemy) {
         if (marine->unit->attack(enemy->unit)) {
-            DEBUG_LOG(CONTROLLER_DEBUG, "marine unit " << marine->unit->getID() << "is attacking " << enemy->unit->getID() << std::endl)
+            enemy->isHighLighted = true;
+            DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_ATTACK), "marine unit " << marine->unit->getID() << "is attacking " << enemy->unit->getID() << std::endl)
             marine->changeState(MarineStates::M_ATTACKING);
-            BWAPI_LOG_IF_ERROR()
             return 1;
         } else {
-            BWAPI_LOG_IF_ERROR()
             return 0;
         }
     }

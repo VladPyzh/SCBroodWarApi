@@ -10,6 +10,9 @@
 
 constexpr bool CARGO_DEBUG = false;
 constexpr bool REFINERY_DEBUG = false;
+constexpr bool WORKERS_DEBUG = false;
+constexpr bool MARINES_DEBUG = false;
+constexpr bool ENEMIES_DEBUG = false;
 
 struct BlackBoard {
     void init() {
@@ -18,7 +21,7 @@ struct BlackBoard {
     }
 
     void fetch() {
-        BWAPI_LOG_IF_ERROR()
+        // BWAPI_LOG_IF_ERROR()
         m_mapTools.onFrame();
 
         for (Worker worker : m_workers) {
@@ -86,6 +89,7 @@ struct BlackBoard {
                 break;
             }
             }
+            DEBUG_LOG(WORKERS_DEBUG, worker->unit->getID() << ' ' << worker->state.inner << '\n');
         }
         for (Depot depot : m_depots) {
             if (depot->unit->isBeingConstructed()) {
@@ -122,6 +126,7 @@ struct BlackBoard {
             }
         }
         for (Barrack barrack : m_barracks) {
+            barrack->highlight();
             if (barrack->unit->isBeingConstructed()) {
                 barrack->changeState(B_CREATING);
             }
@@ -165,21 +170,18 @@ struct BlackBoard {
                 break;
             }
             }
+            DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << '\n');
         }
         for (Enemy enemy : m_enemies) {
+           enemy->highlight();
             if (enemy->unit->isVisible(BWAPI::Broodwar->self())) {
                 enemy->changeState(EnemyStates::E_VISIBLE);
-            } else {
+            } else if (enemy->framesSinceUpdate > 10) {
                 enemy->changeState(EnemyStates::E_UNKNOWN);
             }
+            DEBUG_LOG(ENEMIES_DEBUG, enemy->unit->getID() << ' ' << enemy->state.inner << '\n');
         }
-    
-        
-        // for (Worker worker : m_workers) {
-        //     std::cout << worker->unit->getID() << ' ' << worker->state.inner << '\t';
-        // }
-        // std::cout << '\n';
-        
+        DEBUG_LOG(((ENEMIES_DEBUG && !m_enemies.empty()) || (MARINES_DEBUG && !m_marines.empty()) || (WORKERS_DEBUG && !m_workers.empty())), std::endl);
 
         m_minerals = BWAPI::Broodwar->self()->minerals();
         m_unitSlotsAvailable = BWAPI::Broodwar->self()->supplyTotal();
@@ -242,6 +244,51 @@ struct BlackBoard {
             }
         }
         return res;
+    }
+
+    void removeUnit(int unitId) {
+        for (int i = 0; i < m_workers.size(); i++) {
+            if (m_workers[i]->unit->getID() == unitId) {
+                m_workers[i]->isActive = false;
+                m_workers.erase(m_workers.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_depots.size(); i++) {
+            if (m_depots[i]->unit->getID() == unitId) {
+                m_depots[i]->isActive = false;
+                m_depots.erase(m_depots.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_supplies.size(); i++) {
+            if (m_supplies[i]->unit->getID() == unitId) {
+                m_supplies[i]->isActive = false;
+                m_supplies.erase(m_supplies.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_enemies.size(); i++) {
+            if (m_enemies[i]->unit->getID() == unitId) {
+                m_enemies[i]->isActive = false;
+                m_enemies.erase(m_enemies.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_barracks.size(); i++) {
+            if (m_barracks[i]->unit->getID() == unitId) {
+                m_barracks[i]->isActive = false;
+                m_barracks.erase(m_barracks.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_marines.size(); i++) {
+            if (m_marines[i]->unit->getID() == unitId) {
+                m_marines[i]->isActive = false;
+                m_marines.erase(m_marines.begin() + i);
+                return;
+            }
+        }
     }
 
     template<typename T>

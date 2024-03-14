@@ -64,7 +64,12 @@ struct EventHandler {
 		}
 	}
 	void onUnitHide(BWAPI::Unit unit, BlackBoard& bb) {
-		// update unit status
-
+		if (unit->getPlayer()->isEnemy(BWAPI::Broodwar->self()) == true) { // check if enemy
+			bb.removeUnit(unit->getID());
+		}
 	}
+	void onUnitDestroyed(BWAPI::Unit unit, BlackBoard& bb) {
+		bb.removeUnit(unit->getID());
+	}
+
 };
