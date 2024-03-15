@@ -170,7 +170,7 @@ struct BlackBoard {
                 break;
             }
             }
-            DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << '\n');
+            DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << ' ' << marine->isActive << '\n');
         }
         for (Enemy enemy : m_enemies) {
            enemy->highlight();
