@@ -31,7 +31,7 @@ struct TrainMarinesBehaviour : public TreeBasedBehavior<BarrackStates> {
     DECLARE_STR_TYPE(TrainMarinesBehaviour)
     
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
-        return QuotaRequest{ 100, 2 - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
+        return QuotaRequest{ 100, (int)bb.getUnits<BarrackStates>().size() - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
     }
     bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
         int minerals = bb.minerals();

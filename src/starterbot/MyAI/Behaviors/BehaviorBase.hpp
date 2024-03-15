@@ -42,6 +42,7 @@ struct TreeBasedBehavior: public Behavior {
         DEBUG_LOG(ASSIGN_BT_DEBUG, unit_ptr->unit->getID() << ' ' << type() << ' ' << '\t')
         trees.push_back(createBT(unit_ptr, bb, controller));
         units.push_back(unit_ptr);
+        groupId.push_back(BWAPI::Broodwar->elapsedTime());
         DEBUG_CALL(ASSIGN_BT_DEBUG, trees.back()->print())
         DEBUG_LOG(ASSIGN_BT_DEBUG, std::endl)
     }
@@ -52,6 +53,7 @@ struct TreeBasedBehavior: public Behavior {
             if (!units[i]->isActive) {
                 trees.erase(trees.begin() + i);
                 units.erase(units.begin() + i);
+                groupId.erase(groupId.begin() + i);        
                 i--;
                 continue;
             }
@@ -78,7 +80,7 @@ struct TreeBasedBehavior: public Behavior {
         DEBUG_LOG(UPDATE_BT_DEBUG, '\n');
     }
 
-    std::vector<std::shared_ptr<Unit<T>> getUnitGroup(std::shared_ptr<Unit<T>> unit) {
+    std::vector<std::shared_ptr<Unit<T>>> getUnitGroup(std::shared_ptr<Unit<T>> unit) {
         int idx = -1;
         for (int i = 0; i < units.size(); i++) {
             if (units[i]->unit->getID() == unit->unit->getID()) {
@@ -86,7 +88,7 @@ struct TreeBasedBehavior: public Behavior {
                 break;
             }
         }
-        std::vector<std::shared_ptr<Unit<T>> res;
+        std::vector<std::shared_ptr<Unit<T>>> res;
         for (int i = 0; i < units.size(); i++) {
             if (groupId[i] == groupId[idx]) {
                 res.push_back(units[i]);

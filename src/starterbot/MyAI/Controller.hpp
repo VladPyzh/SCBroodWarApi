@@ -5,6 +5,7 @@
 
 constexpr bool CONTROLLER_DEBUG = false;
 constexpr bool CONTROLLER_DEBUG_ATTACK = true;
+constexpr bool CONTROLLER_DEBUG_MOVE = true;
 
 /// Uses bwapi to do some actions
 struct Controller {
@@ -71,6 +72,12 @@ struct Controller {
         return false;
     }
 
+    void stop(Marine marine) {
+        marine->unit->stop();
+        DEBUG_LOG(CONTROLLER_DEBUG, "marine stop\n")
+        marine->changeState(MarineStates::M_IDLE);
+    }
+
     void moveUnit(Worker worker, BWAPI::Position targetPosition) {
         //moveUnit<WorkerStates>(worker);
         DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << "moving \n")
@@ -82,6 +89,7 @@ struct Controller {
         //moveUnit<WorkerStates>(worker);
         if (marine->unit->move(targetPosition)) {
             marine->changeState(MarineStates::M_MOVING);
+            DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_MOVE), "marine unit " << marine->unit->getID() << "moving \n")
             return true;
         }
         return false;
