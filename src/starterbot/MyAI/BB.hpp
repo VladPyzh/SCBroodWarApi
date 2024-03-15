@@ -11,7 +11,7 @@
 constexpr bool CARGO_DEBUG = false;
 constexpr bool REFINERY_DEBUG = false;
 constexpr bool WORKERS_DEBUG = false;
-constexpr bool MARINES_DEBUG = true;
+constexpr bool MARINES_DEBUG = false;
 constexpr bool ENEMIES_DEBUG = false;
 
 struct BlackBoard {
@@ -170,7 +170,7 @@ struct BlackBoard {
                 break;
             }
             }
-            DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << '\n');
+            DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << ' ' << marine->isActive << '\n');
         }
         for (Enemy enemy : m_enemies) {
            enemy->highlight();

@@ -11,7 +11,7 @@ struct AttackBehavior: public TreeBasedBehavior<MarineStates> {
                 totalEnemies++;
             }
         }
-        return QuotaRequest{ 1, 4 * totalEnemies - (int) trees.size(), BWAPI::UnitTypes::Terran_Marine };
+        return QuotaRequest{ 100, 4 * totalEnemies - (int) trees.size(), BWAPI::UnitTypes::Terran_Marine };
     }
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
         auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
@@ -35,8 +35,8 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
 
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
         int marines = bb.getUnits(MarineStates::M_IDLE).size();
-        if (marines > 20) {
-            return QuotaRequest{ 100, marines, BWAPI::UnitTypes::Terran_Marine };
+        if (marines > 10) {
+            return QuotaRequest{ 50, marines, BWAPI::UnitTypes::Terran_Marine };
         } else {
             return QuotaRequest{ 0, 0, BWAPI::UnitTypes::Terran_Marine };
         }
@@ -72,33 +72,51 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
                 }),
                 bt::sequence({
                     bt::if_true([marine, this](){
+                        BWAPI::Position start_position = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
+                        BWAPI::Position target_position = BWAPI::Position();
+                        target_position.x = (32 * 96) - start_position.x;
+                        target_position.y = (32 * 128) - start_position.y;
+                        
                         auto marinesInSquad = getUnitGroup(marine);
+                        auto myDist = marine->unit->getPosition().getApproxDistance(target_position);
                         for (auto unit : marinesInSquad) {
-                            if (unit->unit->getPosition().getApproxDistance(marine->unit->getPosition()) > 32 * 15) {
+                            if (unit->unit->getPosition().getApproxDistance(target_position) < myDist) {
+                                return false;
+                            }
+                        }
+                        // DEBUG_LOG(true, "unit " << marine->unit->getID() << " is leader, stop at " << marine->unit->getPosition() << '\n');
+                        return true;
+                    }),
+
+                    bt::if_true([marine, this](){
+                        auto marinesInSquad = getUnitGroup(marine);
+                        int cntBad = 0;
+                        for (auto unit : marinesInSquad) {
+                            if (unit->unit->getPosition().getApproxDistance(marine->unit->getPosition()) > 32 * 2) {
+                                cntBad++;
+                            }
+                        }
+                        // DEBUG_LOG(true, "squad has " << cntBad << " bad units" << '\n');
+                        return cntBad * 10 >= marinesInSquad.size();
+                    }),
+                    bt::once([&controller, marine, this]() {
+                        controller.stop(marine);
+                    }),
+                    bt::repeat_until_success([marine, this]() {
+                        BWAPI::Position start_position = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
+                        BWAPI::Position target_position = BWAPI::Position();
+                        target_position.x = (32 * 96) - start_position.x;
+                        target_position.y = (32 * 128) - start_position.y;
+                        
+                        auto marinesInSquad = getUnitGroup(marine);
+                        auto myDist = marine->unit->getPosition().getApproxDistance(target_position);
+                        for (auto unit : marinesInSquad) {
+                            if (unit->unit->getPosition().getApproxDistance(target_position) < myDist) {
+                                // DEBUG_LOG(true, "unit " << marine->unit->getID() << " no longer a leader" << '\n');
                                 return true;
                             }
                         }
                         return false;
-                    }),
-                    bt::once([&controller, marine, this]() {
-                        auto marinesInSquad = getUnitGroup(marine);
-                        // auto avg = BWAPI::Position(0, 0);
-                        // for (auto unit : marinesInSquad) {
-                        //     avg += unit->unit->getPosition();
-                        // }
-                        controller.moveUnit(marine, marinesInSquad[0]->unit->getPosition());
-                    }),
-                    bt::repeat_until_success([marine, &controller, this](){
-                        int cntMarines = 0;
-                        auto marinesInSquad = getUnitGroup(marine);
-
-                        for (auto unit : marinesInSquad) {
-                            if (unit->unit->getPosition().getApproxDistance(marine->unit->getPosition()) > 32 * 10) {
-                                return false;
-                            }
-                        }
-                        controller.stop(marine);
-                        return true;
                     }),
                     bt::fail()
                 }),

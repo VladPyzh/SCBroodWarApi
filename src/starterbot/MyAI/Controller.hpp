@@ -4,8 +4,8 @@
 #include "../Tools.h"
 
 constexpr bool CONTROLLER_DEBUG = false;
-constexpr bool CONTROLLER_DEBUG_ATTACK = true;
-constexpr bool CONTROLLER_DEBUG_MOVE = true;
+constexpr bool CONTROLLER_DEBUG_ATTACK = false;
+constexpr bool CONTROLLER_DEBUG_MOVE = false;
 
 /// Uses bwapi to do some actions
 struct Controller {
