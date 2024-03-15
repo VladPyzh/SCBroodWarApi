@@ -33,16 +33,30 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
       BWAPI::UnitTypes::Terran_Supply_Depot,
       BWAPI::UnitTypes::Terran_Refinery,
       BWAPI::UnitTypes::Terran_Barracks,
-      BWAPI::UnitTypes::Terran_Academy,
+      BWAPI::UnitTypes::Terran_Barracks,
+      BWAPI::UnitTypes::Terran_Barracks,
+
+      //BWAPI::UnitTypes::Terran_Academy,
     };
 
     std::vector<BWAPI::TilePosition> positions = {
-        BWAPI::TilePosition(49, 7),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(49, 7) : BWAPI::TilePosition(46, 120),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(46, 11) : BWAPI::TilePosition(46, 114),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(46, 7) : BWAPI::TilePosition(50, 120),
+        BWAPI::TilePosition(0, 0),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(42, 11) : BWAPI::TilePosition(50, 114),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(38, 11) : BWAPI::TilePosition(54, 114),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(33, 11) : BWAPI::TilePosition(59, 114),
+
+        //(BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(38, 11) : BWAPI::TilePosition(54, 114),
+
+                /*
         BWAPI::TilePosition(46, 11),
         BWAPI::TilePosition(46, 7),
         BWAPI::TilePosition(0, 0),
         BWAPI::TilePosition(42, 11),
         BWAPI::TilePosition(38, 11),
+        */
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const {
@@ -79,14 +93,15 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
     std::shared_ptr<bt::node> createBT(Worker worker, const BlackBoard& bb, Controller& controller) {
         if (cur_build_index < build_order.size()) {
             int tree_for_building_idx = cur_build_index;
+            BWAPI::Position position = (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::Position(47 * 32, 8 * 32) : BWAPI::Position(42 * 32, 117 * 32);
             return bt::sequence({
                 bt::one_of({
-                    bt::if_true([&bb = std::as_const(bb)]() {
-                        return bb.m_mapTools.isExplored(BWAPI::Position(47 * 32, 8 * 32));
+                    bt::if_true([&bb = std::as_const(bb), position]() {
+                        return bb.m_mapTools.isExplored(position);
                     }),
                     bt::sequence({
-                        bt::once([&controller, worker](){
-                            controller.moveUnit(worker, BWAPI::Position(47 * 32, 8 * 32));
+                        bt::once([&controller, worker, position](){
+                            controller.moveUnit(worker, position);
                         }),
                         bt::wait_until([worker]() {
                             return worker->state.inner == W_IDLE;
