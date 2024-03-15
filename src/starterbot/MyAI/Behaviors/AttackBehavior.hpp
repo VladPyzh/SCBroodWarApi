@@ -15,7 +15,7 @@ struct AttackBehavior: public TreeBasedBehavior<MarineStates> {
     }
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
         auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
-
+        std::vector<Enemy> nearbyEnemies;
         std::vector<int> distances;
 
         for (Enemy enemy : enemies) {
@@ -32,10 +32,10 @@ struct AttackBehavior: public TreeBasedBehavior<MarineStates> {
                 argmin = i;
                 min = distances[i];
             }
-        
+        }        
 
         int idx = argmin;
-        auto res = bt::once([&controller, idx, marine, this]() {
+        auto res = bt::once([&controller, idx, marine, nearbyEnemies, this]() {
             controller.attack(marine, nearbyEnemies[idx]);
         });
 
@@ -47,7 +47,7 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
     DECLARE_STR_TYPE(PushBehavior)
 
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
-        int marines = bb.getUnits(arineStates::M_IDLE).size();
+        int marines = bb.getUnits(MarineStates::M_IDLE).size();
 
         if (marines > 20) {
             return QuotaRequest{ 50, marines, BWAPI::UnitTypes::Terran_Marine };
