@@ -92,4 +92,6 @@ template<>
 FSM<BarrackStates> provideFSM<BarrackStates>() { return BARRACK_FSM; }
 template<>
 FSM<AcademyStates> provideFSM<AcademyStates>() { return ACADEMY_FSM; }
+template<>
+FSM<MedicStates> provideFSM<MedicStates>() { return MEDIC_FSM; }
 

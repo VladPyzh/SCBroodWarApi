@@ -16,3 +16,13 @@ struct TrainMarinesBehaviour : public TreeBasedBehavior<BarrackStates> {
     bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type);
     std::shared_ptr<bt::node> createBT(Barrack barrack, const BlackBoard& bb, Controller& controller) ;
 };
+
+struct TrainMedicsBehaviour : public TreeBasedBehavior<BarrackStates> {
+    DECLARE_STR_TYPE(TrainMedicsBehaviour)
+
+    bool canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) const ;
+
+    QuotaRequest submitQuotaRequest(const BlackBoard& bb) const;
+    
+    std::shared_ptr<bt::node> createBT(Barrack barrack, const BlackBoard& bb, Controller& controller);
+};

@@ -74,7 +74,7 @@ struct TreeBasedBehavior: public Behavior {
                 std::cerr << '\n';
                 tree->printStack(true);
                 std::cerr << '\n';
-                throw std::runtime_error("behavior not allowed to fail");
+                //throw std::runtime_error("behavior not allowed to fail");
             }
             if (status != bt::state::running) {
                 units[i]->isActive = false;
