@@ -28,6 +28,10 @@ struct EventHandler {
 			bb.m_marines.push_back(std::make_shared<MarineUnit>(unit));
 			break;
 		}
+		case BWAPI::UnitTypes::Terran_Medic: {
+			bb.m_medics.push_back(std::make_shared<MedicUnit>(unit));
+			break;
+		}
 		}
 		for (int i = 0; i < bb.pending_units.size(); i++) {
 			if (bb.pending_units[i] == type) {

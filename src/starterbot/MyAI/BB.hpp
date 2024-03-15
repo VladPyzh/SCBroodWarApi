@@ -172,6 +172,38 @@ struct BlackBoard {
             }
             DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << ' ' << marine->isActive << '\n');
         }
+        for (Medic medic : m_medics) {
+            switch (medic->state.inner) {
+            case MedicStates::Me_UNKNOWN: {
+                if (medic->unit->isBeingConstructed()) {
+                    medic->changeState(MedicStates::Me_CREATING);
+                }
+                if (medic->unit->isCompleted()) {
+                    medic->changeState(MedicStates::Me_IDLE);
+                }
+                break;
+            }
+            case MedicStates::Me_CREATING: {
+                if (medic->unit->isCompleted()) {
+                    medic->changeState(MedicStates::Me_IDLE);
+                }
+                break;
+            }
+            case MedicStates::Me_MOVING: {
+                if (!medic->unit->isMoving()) {
+                    medic->changeState(MedicStates::Me_IDLE);
+                }
+                break;
+            }
+                                       /*
+            case MarineStates::Me_HEALING: {
+                if (!medic->unit->is() && medic->framesSinceUpdate > 10) {
+                    marine->changeState(MarineStates::M_IDLE);
+                }
+                break;
+            }*/
+            }
+        }
         for (Enemy enemy : m_enemies) {
            enemy->highlight();
            enemy->framesSinceUpdate++;
@@ -234,6 +266,10 @@ struct BlackBoard {
         return BWAPI::UnitTypes::Terran_Marine;
     }
 
+    BWAPI::UnitType medicType() const {
+        return BWAPI::UnitTypes::Terran_Medic;
+    }
+
     template<typename T>
     std::vector<std::shared_ptr<Unit<T>>> getUnits(T state) const {
         std::vector<std::shared_ptr<Unit<T>>> res;
@@ -252,6 +288,13 @@ struct BlackBoard {
             if (m_workers[i]->unit->getID() == unitId) {
                 m_workers[i]->isActive = false;
                 m_workers.erase(m_workers.begin() + i);
+                return;
+            }
+        }
+        for (int i = 0; i < m_medics.size(); i++) {
+            if (m_medics[i]->unit->getID() == unitId) {
+                m_medics[i]->isActive = false;
+                m_medics.erase(m_medics.begin() + i);
                 return;
             }
         }
@@ -322,8 +365,14 @@ struct BlackBoard {
         return m_marines;
     }
 
+    template<>
+    std::vector<Medic> getUnits<MedicStates>() const {
+        return m_medics;
+    }
+
     MapTools m_mapTools;
 
+    std::vector<Medic> m_medics;
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;
     std::vector<Supply> m_supplies;
