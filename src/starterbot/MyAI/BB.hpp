@@ -381,9 +381,11 @@ struct BlackBoard {
     std::vector<Marine> m_marines;
     std::vector<Refinery> m_refineries;
 
+    BWAPI::Position enemy_starting_pos = BWAPI::Broodwar->self()->getStartLocation().x < 48 ? BWAPI::Position(64, 118) : BWAPI::Position(31, 7);
     std::vector<BWAPI::UnitType> pending_units;
     int m_minerals;
     int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
+
 };
