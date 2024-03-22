@@ -75,6 +75,7 @@ struct BlackBoard {
 
     // Stores map information (e.g. last seen info for tiles)
     MapTools m_mapTools;
+    BWAPI::Position enemy_starting_pos = BWAPI::Broodwar->self()->getStartLocation().x < 48 ? BWAPI::Position(64, 118) : BWAPI::Position(31, 7);
 
     // Stores in-game available units
     std::vector<Medic> m_medics;
@@ -95,4 +96,5 @@ struct BlackBoard {
     int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
+
 };
