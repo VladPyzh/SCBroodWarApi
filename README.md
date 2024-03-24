@@ -38,6 +38,9 @@ In Starcraft, unit can do many things and have many different states. For instan
 
 As we connect to the game through BWAPI, we are limited by what it allows, and often it's behavior is not documented. To avoid problems like that, we've developed a finite state machine, that keeps track of what unit is doing in game. It verifies that command is not issued when previous command isn't finished or that unit haven't started doing some unexpected behavior in-game by itself. In case of anomaly detection, exception is thrown. It was extremely useful for debugging purposes.
 
+![](docs/unit-lifecycle.jpg)
+
+
 ### Behavior tree
 
 To make units do something, we assign them a behavior. Every unit is either IDLE or active, going through a single behavior.
