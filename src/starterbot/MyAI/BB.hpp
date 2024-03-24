@@ -372,6 +372,9 @@ struct BlackBoard {
 
     MapTools m_mapTools;
 
+    //Grid<int> m_submitted_for_scout = Grid<int>(BWAPI::Broodwar->mapWidth(), BWAPI::Broodwar->mapHeight(), 0);
+    
+
     std::vector<Medic> m_medics;
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;
