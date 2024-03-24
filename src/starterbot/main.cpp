@@ -1,7 +1,6 @@
 #include <BWAPI.h>
 #include <BWAPI/Client.h>
 #include "MyAi/Ai.hpp"
-#include "MyAi/EventHandler.hpp"
 #include "ReplayParser.h"
 #include <iostream>
 #include <thread>
@@ -55,7 +54,6 @@ int main(int argc, char * argv[])
 void PlayGame()
 {
     AI ai;
-    EventHandler handler;
 
     // The main game loop, which continues while we are connected to BWAPI and in a game
     while (BWAPI::BWAPIClient.isConnected() && BWAPI::Broodwar->isInGame())
@@ -68,15 +66,7 @@ void PlayGame()
                 case BWAPI::EventType::MatchStart:   { ai.onStart();                       break; }
                 case BWAPI::EventType::MatchFrame:   { ai.onFrame();                       break; }
                 case BWAPI::EventType::MatchEnd:     { ai.onEnd(e.isWinner());             break; }
-                case BWAPI::EventType::UnitCreate:   { handler.onUnitCreate(e.getUnit(), ai.blackBoard);       break; }
-                case BWAPI::EventType::UnitComplete: { handler.onUnitComplete(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitDestroy:  { handler.onUnitDestroyed(e.getUnit(), ai.blackBoard);     break; }
-                //case BWAPI::EventType::UnitShow:     { handler.onUnitShow(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitDiscover: { handler.onDiscovery(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitHide:     { handler.onUnitHide(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitRenegade:     { handler.onUnitHide(e.getUnit(), ai.blackBoard);     break; }
-                case BWAPI::EventType::UnitMorph:    { handler.onUnitMorph(e.getUnit(), ai.blackBoard);     break; }
-
+                default: { ai.onEvent(e); break; }
             }
         }
 

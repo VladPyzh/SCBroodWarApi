@@ -3,36 +3,22 @@
 #include "BB.hpp"
 #include "Controller.hpp"
 #include "Planners.hpp"
+#include "EventHandler.hpp"
 #include <BWAPI.h>
 
+// Refer to README.md for general architecture
 struct AI
 {
 	BlackBoard blackBoard;
 	Controller controller;
 	Planner planner;
+	EventHandler eventHandler;
 
 public:
 
     // functions that are triggered by various BWAPI events from main.cpp
-	void onStart() {
-		// Set our BWAPI options here    
-		BWAPI::Broodwar->setLocalSpeed(2);
-		BWAPI::Broodwar->setFrameSkip(0);
-		
-		// Enable the flag that tells BWAPI top let users enter input while bot plays
-		BWAPI::Broodwar->enableFlag(BWAPI::Flag::UserInput);
-		std::cerr << "FLAGS IS " << BWAPI::Broodwar->isFlagEnabled(BWAPI::Flag::CompleteMapInformation) << std::endl;
-
-
-		blackBoard.init();
-	}
-	
-	void onFrame() {
-		blackBoard.fetch();
-		planner.update(blackBoard, controller);
-	}
-
-	void onEnd(bool isWinner) {
-		std::cout << "We " << (isWinner ? "won!" : "lost!") << "\n";
-	}
+	void onStart();
+	void onFrame();
+	void onEvent(const BWAPI::Event& e);
+	void onEnd(bool isWinner);
 };

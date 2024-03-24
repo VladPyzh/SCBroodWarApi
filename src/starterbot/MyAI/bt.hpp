@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <functional>
 #include <iostream>
@@ -11,15 +13,50 @@ constexpr bool BT_STEP_DEBUG = false;
 
 namespace bt {
 
+/*
+    For BT we use a lambda-based approach. Our goal is to make creating trees as easy as possible.
+    So, every BT node works either with other BT nodes or with functions.
+    It makes logic pretty explicit and clear.
+
+    Example:For training units pipeline is "
+        wait until you can train a new unit,
+        issue train command successfully
+        and wait until training is done
+    "
+    in BT format it will look like that
+    bt::sequence({
+        bt::wait_until([]() {
+            return canTrainUnit();
+        }),
+        bt::repeat_until_success([&controller]() {
+            return controller.train();
+        }),
+        bt::wait_until([depot]() {
+            return depot->state.inner == D_IDLE;
+        })
+    });
+
+
+*/
+
+
+// Standard set of states for BT node
 enum state {
     success = 0,
     failure = 1,
     running = 2
 };
 
+// Base class for BT node.
+// BT node should have a step() mechanism to determine changes on each call
+// This wrapper also ensures debugability of all nodes
 struct node {
     virtual void start() {}
+
+    // the main method to be overriden
     virtual state step() = 0;
+    
+    
     virtual std::string type() = 0;
     virtual void print(bool force = false) {
         DEBUG_LOG(BT_STRUCTURE_DEBUG || force, type());
@@ -41,6 +78,23 @@ struct node {
     }
 };
 
+
+
+// primitives to use
+std::shared_ptr<node> action(std::function<void()> f);
+std::shared_ptr<node> once(std::function<void()> f) ;
+std::shared_ptr<node> wait_until(std::function<bool()> f) ;
+std::shared_ptr<node> repeat_until_success(std::function<bool()> f) ;
+std::shared_ptr<node> repeat_node_until_success(std::shared_ptr<node> node) ;
+std::shared_ptr<node> if_true(std::function<bool()> f) ;
+std::shared_ptr<node> try_node(std::shared_ptr<node> node);
+std::shared_ptr<node> sequence(std::vector<std::shared_ptr<node>>&& nodes) ;
+std::shared_ptr<node> repeat(std::shared_ptr<node> node) ;
+std::shared_ptr<node> one_of(std::vector<std::shared_ptr<node>>&& nodes) ;
+std::shared_ptr<node> fail() ;
+
+
+// runs a function
 struct action_node : public node {
     DECLARE_STR_TYPE(action_node)
 
@@ -53,6 +107,7 @@ struct action_node : public node {
     std::function<void()> f;
 };
 
+// runs function exactly once even if recalled again
 struct action_once_node : public node {
     DECLARE_STR_TYPE(action_once_node)
 
@@ -74,6 +129,7 @@ struct action_once_node : public node {
     bool done = false;
 };
 
+// running function until it succeeds
 struct wait_until_node : public node {
     DECLARE_STR_TYPE(wait_until_node)
 
@@ -90,6 +146,8 @@ struct wait_until_node : public node {
 };
 
 
+// group set of actions in a sequence.
+// first to fail fails all the chain
 struct sequencer_node : public node {
     DECLARE_STR_TYPE(sequencer_node)
     
@@ -130,6 +188,8 @@ struct sequencer_node : public node {
     int current_idx{ 0 };
 };
 
+// group set of nodes as a list of alternatives
+// first to succeed succeeds all the chain
 struct selector_node : public node {
     DECLARE_STR_TYPE(selector_node)
 
@@ -170,6 +230,7 @@ struct selector_node : public node {
     int current_idx{ 0 };
 };
 
+// runs predicate to check if it is true
 struct condition_node : public node {
     DECLARE_STR_TYPE(condition_node)
     
@@ -188,6 +249,7 @@ struct condition_node : public node {
 };
 
 
+// repeates node forever
 struct repeater_node : public node {
     DECLARE_STR_TYPE(repeater_node)
 
@@ -212,6 +274,7 @@ struct repeater_node : public node {
     std::shared_ptr<node> node;
 };
 
+// repeates node until is succeeds 
 struct repeate_until_node : public node {
     DECLARE_STR_TYPE(repeate_until_node)
     
@@ -240,6 +303,8 @@ struct repeate_until_node : public node {
     std::shared_ptr<node> node;
 };
 
+
+// try to run an action and don't fail if it fails
 struct try_node_node : public node {
     DECLARE_STR_TYPE(try_node_node)
     
@@ -264,50 +329,5 @@ struct try_node_node : public node {
     }
     std::shared_ptr<node> node;
 };
-
-
-std::shared_ptr<node> action(std::function<void()> f) {
-    return std::make_shared<action_node>(std::move(f));
-}
-
-std::shared_ptr<node> once(std::function<void()> f) {
-    return std::make_shared<action_once_node>(std::move(f));
-}
-
-std::shared_ptr<node> wait_until(std::function<bool()> f) {
-    return std::make_shared<wait_until_node>(std::move(f));
-}
-
-std::shared_ptr<node> repeat_until_success(std::function<bool()> f) {
-    return wait_until(std::move(f));
-}
-
-std::shared_ptr<node> repeat_node_until_success(std::shared_ptr<node> node) {
-    return std::make_shared<repeate_until_node>(std::move(node));
-}
-
-std::shared_ptr<node> if_true(std::function<bool()> f) {
-    return std::make_shared<condition_node>(std::move(f));
-}
-
-std::shared_ptr<node> try_node(std::shared_ptr<node> node) {
-    return std::make_shared<try_node_node>(std::move(node));
-}
-
-std::shared_ptr<node> sequence(std::vector<std::shared_ptr<node>>&& nodes) {
-    return std::make_shared<sequencer_node>(std::move(nodes));
-}
-
-std::shared_ptr<node> repeat(std::shared_ptr<node> node) {
-    return std::make_shared<repeater_node>(std::move(node));
-}
-
-std::shared_ptr<node> one_of(std::vector<std::shared_ptr<node>>&& nodes) {
-    return std::make_shared<selector_node>(std::move(nodes));
-}
-
-std::shared_ptr<node> fail() {
-    return if_true([](){ return false; });
-}
 
 }
