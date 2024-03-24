@@ -45,3 +45,38 @@ std::shared_ptr<bt::node> TrainMarinesBehaviour::createBT(Barrack barrack, const
     });
 }
 
+
+
+
+
+bool TrainMedicsBehaviour::canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) const {
+    int minerals = bb.minerals();
+    int gas = bb.gas();
+    int unitSlots = bb.freeUnitSlots();
+    return minerals >= type.mineralPrice() && gas >= type.gasPrice() && unitSlots >= type.supplyRequired();
+}
+
+Behavior::QuotaRequest TrainMedicsBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
+    if (canTrainUnit(bb, bb.medicType()) && bb.haveRefinery()) {
+        return Behavior::QuotaRequest{ 100, std::max(0, 1 - (int)trees.size()), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
+    }
+    else {
+        return Behavior::QuotaRequest{ 100, 0, BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
+    }
+    
+}
+
+std::shared_ptr<bt::node> TrainMedicsBehaviour::createBT(Barrack barrack, const BlackBoard& bb, Controller& controller) {
+    return bt::sequence({
+        bt::wait_until([&bb = std::as_const(bb), this]() {
+            return canTrainUnit(bb, bb.medicType());
+        }),
+        bt::repeat_until_success([&controller, barrack, &bb = std::as_const(bb)]() {
+            return controller.train(barrack, bb.medicType(), bb);
+        }),
+        bt::wait_until([barrack]() {
+            return barrack->state.inner == B_IDLE;
+        })
+        });
+}
+

@@ -59,6 +59,15 @@ std::ostream& operator << (std::ostream& out, BarrackStates x) {
     return out;
 }
 
+std::ostream& operator << (std::ostream& out, MedicStates x) {
+    WRITE_ENUM(out, x, Me_UNKNOWN);
+    WRITE_ENUM(out, x, Me_CREATING);
+    WRITE_ENUM(out, x, Me_IDLE);
+    WRITE_ENUM(out, x, Me_MOVING);
+    WRITE_ENUM(out, x, Me_HEALING);
+    return out;
+}
+
 std::ostream& operator << (std::ostream& out, EnemyStates x) {
     WRITE_ENUM(out, x, E_UNKNOWN);
     WRITE_ENUM(out, x, E_VISIBLE);
@@ -92,4 +101,6 @@ template<>
 FSM<BarrackStates> provideFSM<BarrackStates>() { return BARRACK_FSM; }
 template<>
 FSM<AcademyStates> provideFSM<AcademyStates>() { return ACADEMY_FSM; }
+template<>
+FSM<MedicStates> provideFSM<MedicStates>() { return MEDIC_FSM; }
 

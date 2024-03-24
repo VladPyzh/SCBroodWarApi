@@ -23,6 +23,10 @@ void EventHandler::onUnitCreate(BWAPI::Unit unit, BlackBoard& bb) {
 		bb.m_marines.push_back(std::make_shared<MarineUnit>(unit));
 		break;
 	}
+	case BWAPI::UnitTypes::Terran_Medic: {
+		bb.m_medics.push_back(std::make_shared<MedicUnit>(unit));
+		break;
+	}
 	case BWAPI::UnitTypes::Terran_Academy: {
 		bb.m_academy.push_back(std::make_shared<AcademyUnit>(unit));
 		break;

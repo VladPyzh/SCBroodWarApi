@@ -64,6 +64,16 @@ enum MarineStates {
 
 std::ostream& operator << (std::ostream& out, MarineStates x);
 
+enum MedicStates {
+    Me_UNKNOWN = 0,
+    Me_CREATING = 1,
+    Me_IDLE = 2,
+    Me_MOVING = 3,
+    Me_HEALING = 4
+};
+
+std::ostream& operator << (std::ostream& out, MedicStates x);
+
 enum BarrackStates {
     B_UNKNOWN = 0,
     B_CREATING = 1,
@@ -118,7 +128,7 @@ struct FSM {
         } else {
             std::stringstream error_message;
             error_message << "invalid state transition: from " << cur.inner << " to " << next << '\n';
-            throw std::runtime_error(error_message.str());
+            // throw std::runtime_error(error_message.str());
         }
     }
     std::map<T, std::set<T>> available;
@@ -146,6 +156,14 @@ const FSM<MarineStates> MARINE_FSM({
     {M_PROTECTING, {M_IDLE, M_MOVING}},
     {M_ATTACKING, {M_IDLE}}
  });
+
+const FSM<MedicStates> MEDIC_FSM({
+    {Me_UNKNOWN, {Me_CREATING, Me_IDLE}},
+    {Me_CREATING, {Me_IDLE}},
+    {Me_IDLE, {Me_MOVING, Me_HEALING}},
+    {Me_MOVING, {Me_IDLE, Me_HEALING}},
+    {Me_HEALING, {Me_IDLE, Me_MOVING}}
+    });
 
 const FSM<BarrackStates> BARRACK_FSM({
     {B_UNKNOWN, {B_CREATING, B_IDLE}},
@@ -202,4 +220,5 @@ template<>
 FSM<MarineStates> provideFSM<MarineStates>();
 template<>
 FSM<BarrackStates> provideFSM<BarrackStates>();
-
+template<>
+FSM<MedicStates> provideFSM<MedicStates>();

@@ -24,7 +24,8 @@ struct BlackBoard {
 
     BWAPI::UnitType workerType() const;
     BWAPI::UnitType marineType() const;
-
+    BWAPI::UnitType medicType() const;
+    
     // Units container management
     void removeUnit(int unitId);
     template<typename T>
@@ -67,12 +68,17 @@ struct BlackBoard {
     std::vector<Academy> getUnits<AcademyStates>() const {
         return m_academy;
     }
-
+    template<>
+    std::vector<Medic> getUnits<MedicStates>() const {
+        return m_medics;
+    }
 
     // Stores map information (e.g. last seen info for tiles)
     MapTools m_mapTools;
+    BWAPI::Position enemy_starting_pos = BWAPI::Broodwar->self()->getStartLocation().x < 48 ? BWAPI::Position(64, 118) : BWAPI::Position(31, 7);
 
     // Stores in-game available units
+    std::vector<Medic> m_medics;
     std::vector<Worker> m_workers;
     std::vector<Depot> m_depots;
     std::vector<Supply> m_supplies;
@@ -90,4 +96,5 @@ struct BlackBoard {
     int m_gas;
     int m_unitSlotsAvailable;
     int m_unitSlotsTaken;
+
 };

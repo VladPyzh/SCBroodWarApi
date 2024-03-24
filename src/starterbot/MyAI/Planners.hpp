@@ -16,12 +16,15 @@ struct Planner {
         managers.emplace_back(std::make_unique<GatherMineralsBehavior>());
         managers.emplace_back(std::make_unique<ConstructingBehavior>());
         managers.emplace_back(std::make_unique<ScoutEnemyBaseBehaviour>());
+        managers.emplace_back(std::make_unique<TrainMedicsBehaviour>());
         managers.emplace_back(std::make_unique<TrainMarinesBehaviour>());
         managers.emplace_back(std::make_unique<TrainWorkersBehaviour>());
         managers.emplace_back(std::make_unique<AttackBehavior>());
         managers.emplace_back(std::make_unique<PushBehavior>());
         managers.emplace_back(std::make_unique<UpgradeMarinesBehaviour>());
         managers.emplace_back(std::make_unique<MoveOnRamp>());
+        managers.emplace_back(std::make_unique<LonelyScouting>());
+        managers.emplace_back(std::make_unique<SupportBehavior>());
     }
 
 

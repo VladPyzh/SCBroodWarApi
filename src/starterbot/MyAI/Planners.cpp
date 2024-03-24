@@ -21,6 +21,7 @@ void Planner::update(const BlackBoard& bb, Controller& controller) {
     std::vector<Barrack> barracks = bb.getUnits(B_IDLE);
     std::vector<Marine> marines = bb.getUnits(M_IDLE);
     std::vector<Academy> academies = bb.getUnits(A_IDLE);
+    std::vector<Medic> medics = bb.getUnits(Me_IDLE);
 
     for (int i = 0; i < requests.size(); i++) {
         if (requests[i].type == BWAPI::UnitTypes::Terran_SCV) {
@@ -34,6 +35,9 @@ void Planner::update(const BlackBoard& bb, Controller& controller) {
         }
         if (requests[i].type == BWAPI::UnitTypes::Terran_Marine) {
             assignUnitstoBehavior(managers[requests[i].idx], marines, requests[i], bb, controller);
+        }
+        if (requests[i].type == BWAPI::UnitTypes::Terran_Medic) {
+            assignUnitstoBehavior(managers[requests[i].idx], medics, requests[i], bb, controller);
         }
         if (requests[i].type == BWAPI::UnitTypes::Terran_Academy) {
             assignUnitstoBehavior(managers[requests[i].idx], academies, requests[i], bb, controller);

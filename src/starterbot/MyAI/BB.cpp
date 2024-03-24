@@ -256,6 +256,10 @@ BWAPI::UnitType BlackBoard::marineType() const {
     return BWAPI::UnitTypes::Terran_Marine;
 }
 
+BWAPI::UnitType BlackBoard::medicType() const {
+    return BWAPI::UnitTypes::Terran_Medic;
+}
+
 void BlackBoard::removeUnit(int unitId) {
     for (int i = 0; i < m_workers.size(); i++) {
         if (m_workers[i]->unit->getID() == unitId) {
