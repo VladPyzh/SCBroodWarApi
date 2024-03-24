@@ -63,6 +63,10 @@ struct BlackBoard {
     std::vector<Marine> getUnits<MarineStates>() const {
         return m_marines;
     }
+    template<>
+    std::vector<Academy> getUnits<AcademyStates>() const {
+        return m_academy;
+    }
 
 
     // Stores map information (e.g. last seen info for tiles)
@@ -76,6 +80,7 @@ struct BlackBoard {
     std::vector<Barrack> m_barracks;
     std::vector<Marine> m_marines;
     std::vector<Refinery> m_refineries;
+    std::vector<Academy> m_academy;
 
     // Units that are not yet created but already issued
     // (e.g. Building that SCV just goes to construct)

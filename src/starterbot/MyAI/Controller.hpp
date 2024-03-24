@@ -20,4 +20,5 @@ struct Controller {
     bool moveUnit(Marine marine, BWAPI::Position targetPosition);
     bool build(Worker worker, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPos, const BlackBoard& bb) ;
     bool attack(Marine marine, Enemy enemy) ;
+    bool upgrade(Academy academy, BWAPI::UpgradeType upgradeType) ;
 };

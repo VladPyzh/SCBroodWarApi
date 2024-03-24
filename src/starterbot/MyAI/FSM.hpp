@@ -80,6 +80,16 @@ enum EnemyStates {
 
 std::ostream& operator << (std::ostream& out, EnemyStates x);
 
+
+enum AcademyStates {
+    A_UNKNOWN = 0,
+    A_CREATING = 1,
+    A_IDLE = 2,
+    A_UPGRADING = 3
+};
+
+std::ostream& operator << (std::ostream& out, AcademyStates x);
+
 // State is a container for enum value of unit state.
 // We use it in pair with FSM, see below
 template <typename T>
@@ -166,6 +176,13 @@ const FSM<SupplyStates> SUPPLY_FSM({
 const FSM<EnemyStates> ENEMY_FSM({
     {E_VISIBLE, {E_UNKNOWN}},
     {E_UNKNOWN, {E_VISIBLE}}
+});
+
+const FSM<AcademyStates> ACADEMY_FSM({
+    {A_UNKNOWN, {A_CREATING, A_IDLE}},
+    {A_CREATING, {A_IDLE}},
+    {A_IDLE, {A_UPGRADING}},
+    {A_UPGRADING, {A_IDLE}}
 });
 
 template<typename T>

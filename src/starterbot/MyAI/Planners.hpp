@@ -5,6 +5,7 @@
 #include "Behaviors/TrainingBehavior.hpp"
 #include "Behaviors/MarineBehavior.hpp"
 #include "Behaviors/AttackBehavior.hpp"
+#include "Behaviors/UpgradingBehavior.hpp"
 
 
 // Planner is responsible for the cooperation of all available behaviors.
@@ -19,7 +20,8 @@ struct Planner {
         managers.emplace_back(std::make_unique<TrainWorkersBehaviour>());
         managers.emplace_back(std::make_unique<AttackBehavior>());
         managers.emplace_back(std::make_unique<PushBehavior>());
-        managers.emplace_back(std::make_unique<MoveOnRamp>()); // stupidest thing
+        managers.emplace_back(std::make_unique<UpgradeMarinesBehaviour>());
+        managers.emplace_back(std::make_unique<MoveOnRamp>());
     }
 
 

@@ -112,3 +112,12 @@ bool Controller::attack(Marine marine, Enemy enemy) {
         return 0;
     }
 }
+
+bool Controller::upgrade(Academy academy, BWAPI::UpgradeType upgradeType) {
+    if (academy->unit->upgrade(upgradeType)) {
+        academy->changeState(AcademyStates::A_UPGRADING);
+        return 1;
+    } else {
+        return 0;
+    }
+}

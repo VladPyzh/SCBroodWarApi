@@ -65,6 +65,14 @@ std::ostream& operator << (std::ostream& out, EnemyStates x) {
     return out;
 }
 
+std::ostream& operator << (std::ostream& out, AcademyStates x) {
+    WRITE_ENUM(out, x, A_UNKNOWN);
+    WRITE_ENUM(out, x, A_CREATING);
+    WRITE_ENUM(out, x, A_IDLE);
+    WRITE_ENUM(out, x, A_UPGRADING);
+    return out;
+}
+
 template<typename T>
 FSM<T> provideFSM() { throw std::runtime_error("not defined"); }
 
@@ -82,4 +90,6 @@ template<>
 FSM<MarineStates> provideFSM<MarineStates>() { return MARINE_FSM; }
 template<>
 FSM<BarrackStates> provideFSM<BarrackStates>() { return BARRACK_FSM; }
+template<>
+FSM<AcademyStates> provideFSM<AcademyStates>() { return ACADEMY_FSM; }
 

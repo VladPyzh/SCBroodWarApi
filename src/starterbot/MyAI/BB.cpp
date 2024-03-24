@@ -18,6 +18,7 @@ void BlackBoard::fetch() {
 
     for (Worker worker : m_workers) {
         worker->framesSinceUpdate++;
+        worker->highlight();
         switch (worker->state.inner) {
         case WorkerStates::W_UNKNOWN: {
             if (worker->unit->isBeingConstructed()) {
@@ -85,6 +86,7 @@ void BlackBoard::fetch() {
     }
     for (Depot depot : m_depots) {
         depot->framesSinceUpdate++;
+        depot->highlight();
         if (depot->unit->isBeingConstructed()) {
             depot->changeState(DepotStates::D_CREATING);
         } else if (depot->unit->isTraining()) {
@@ -97,6 +99,7 @@ void BlackBoard::fetch() {
     }
     for (Refinery ref : m_refineries) {
         ref->framesSinceUpdate++;
+        ref->highlight();
         if (ref->unit->isBeingConstructed()) {
             ref->changeState(RefineryStates::R_CREATING);
         }
@@ -112,6 +115,7 @@ void BlackBoard::fetch() {
     }
     for (Supply supply : m_supplies) {
         supply->framesSinceUpdate++;
+        supply->highlight();
         if (supply->unit->isBeingConstructed()) {
             supply->changeState(SupplyStates::S_CREATING);
         } else if (supply->unit->isCompleted()) {
@@ -136,8 +140,25 @@ void BlackBoard::fetch() {
             throw std::runtime_error("unknown state");
         }
     }
+    for (Academy academy : m_academy) {
+        academy->framesSinceUpdate++;
+        academy->highlight();
+        if (academy->unit->isBeingConstructed()) {
+            academy->changeState(A_CREATING);
+        }
+        else if (academy->unit->isUpgrading()) {
+            academy->changeState(A_UPGRADING);
+        }
+        else if (academy->unit->isCompleted()) {
+            academy->changeState(A_IDLE);
+        }
+        else {
+            throw std::runtime_error("unknown state");
+        }
+    }
     for (Marine marine : m_marines) {
         marine->framesSinceUpdate++;
+        marine->highlight();
         switch (marine->state.inner) {
         case MarineStates::M_UNKNOWN: {
             if (marine->unit->isBeingConstructed()) {

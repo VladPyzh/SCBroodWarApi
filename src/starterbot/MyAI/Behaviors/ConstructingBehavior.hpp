@@ -16,6 +16,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
       BWAPI::UnitTypes::Terran_Barracks,
       BWAPI::UnitTypes::Terran_Barracks,
       BWAPI::UnitTypes::Terran_Barracks,
+      BWAPI::UnitTypes::Terran_Academy,
     };
 
     std::vector<BWAPI::TilePosition> positions = {
@@ -26,6 +27,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(42, 11) : BWAPI::TilePosition(50, 114),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(38, 11) : BWAPI::TilePosition(54, 114),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(33, 11) : BWAPI::TilePosition(59, 114),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(33, 7) : BWAPI::TilePosition(59, 120),
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const;
