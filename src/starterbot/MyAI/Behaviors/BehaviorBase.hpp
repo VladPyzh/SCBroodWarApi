@@ -69,11 +69,11 @@ struct TreeBasedBehavior: public Behavior {
             auto status = tree->step();
 
             if (status == bt::state::failure) {
-                std::cerr << units[i]->unit->getID() << ' ' << units[i]->state.inner << ' ' << type() << '\n';
-                tree->print(true);
-                std::cerr << '\n';
-                tree->printStack(true);
-                std::cerr << '\n';
+                // std::cerr << units[i]->unit->getID() << ' ' << units[i]->state.inner << ' ' << type() << '\n';
+                // tree->print(true);
+                // std::cerr << '\n';
+                // tree->printStack(true);
+                // std::cerr << '\n';
                 //throw std::runtime_error("behavior not allowed to fail");
             }
             if (status != bt::state::running) {
