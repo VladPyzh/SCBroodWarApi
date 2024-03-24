@@ -298,7 +298,6 @@ struct SupportBehavior : public TreeBasedBehavior<MedicStates> {
                     }
                 }),
                 bt::if_true([&controller, medic, &bb = std::as_const(bb), this]() {
-                    std::cerr << "in Seq" << std::endl;
                     if (medic->framesSinceUpdate >= 1) {
                         return true;
                     }
