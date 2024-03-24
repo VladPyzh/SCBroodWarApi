@@ -60,13 +60,16 @@ So, planner serves a global synchronization purposes. Overall, our strategy is l
 
 Our strategy provides complex build order, scouting technique, squad management for attacking enemy base. We play for Terrans.
 
-Build order used is:
+Buildings supported:
 - Supply depots
 - Barracks
 - Refinery
 - Academy
 
-Units trained are:
+Units trained:
 - SCV
 - Marines
 - Medics
+
+Upgrades issued:
+- U 238 Shells 
