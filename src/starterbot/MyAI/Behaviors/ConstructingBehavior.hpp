@@ -1,4 +1,4 @@
-
+#pragma once
 #include "BehaviorBase.hpp"
 
 
@@ -31,7 +31,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const;
     bool shouldConstruct(const BlackBoard& bb, BWAPI::UnitType type) const;
 
-    QuotaRequest submitQuotaRequest(const BlackBoard& bb) const;
+    Behavior::QuotaRequest submitQuotaRequest(const BlackBoard& bb) const;
 
     std::shared_ptr<bt::node> createBT(Worker worker, const BlackBoard& bb, Controller& controller);
 };

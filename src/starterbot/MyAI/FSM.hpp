@@ -24,20 +24,7 @@ enum WorkerStates {
     W_GASING = 9,
 };
 
-std::ostream& operator << (std::ostream& out, WorkerStates x) {
-    WRITE_ENUM(out, x, W_UNKNOWN);
-    WRITE_ENUM(out, x, W_CREATING);
-    WRITE_ENUM(out, x, W_IDLE);
-    WRITE_ENUM(out, x, W_MINING);
-    WRITE_ENUM(out, x, W_GOING_TO_BUILD);
-    WRITE_ENUM(out, x, W_BUILDING);
-    WRITE_ENUM(out, x, W_IS_TO_RETURN_CARGO);
-    WRITE_ENUM(out, x, W_RETURNING_CARGO);
-    WRITE_ENUM(out, x, W_SCOUTING);
-    WRITE_ENUM(out, x, W_GASING);
-
-    return out;
-}
+std::ostream& operator << (std::ostream& out, WorkerStates x) ;
 
 enum DepotStates {
     D_UNKNOWN = 0,
@@ -46,13 +33,7 @@ enum DepotStates {
     D_TRAINING = 3
 };
 
-std::ostream& operator << (std::ostream& out, DepotStates x) {
-    WRITE_ENUM(out, x, D_UNKNOWN);
-    WRITE_ENUM(out, x, D_CREATING);
-    WRITE_ENUM(out, x, D_IDLE);
-    WRITE_ENUM(out, x, D_TRAINING);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, DepotStates x);
 
 enum RefineryStates {
     R_UNKNOWN = 0,
@@ -61,13 +42,7 @@ enum RefineryStates {
     R_EMPTY = 3
 };
 
-std::ostream& operator << (std::ostream& out, RefineryStates x) {
-    WRITE_ENUM(out, x, R_UNKNOWN);
-    WRITE_ENUM(out, x, R_CREATING);
-    WRITE_ENUM(out, x, R_IDLE);
-    WRITE_ENUM(out, x, R_EMPTY);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, RefineryStates x);
 
 enum SupplyStates {
     S_UNKNOWN = 0,
@@ -76,12 +51,7 @@ enum SupplyStates {
 };
 
 
-std::ostream& operator << (std::ostream& out, SupplyStates x) {
-    WRITE_ENUM(out, x, S_UNKNOWN);
-    WRITE_ENUM(out, x, S_CREATING);
-    WRITE_ENUM(out, x, S_IDLE);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, SupplyStates x);
 
 enum MarineStates {
     M_UNKNOWN = 0,
@@ -92,15 +62,7 @@ enum MarineStates {
     M_ATTACKING = 5
 };
 
-std::ostream& operator << (std::ostream& out, MarineStates x) {
-    WRITE_ENUM(out, x, M_UNKNOWN);
-    WRITE_ENUM(out, x, M_CREATING);
-    WRITE_ENUM(out, x, M_IDLE);
-    WRITE_ENUM(out, x, M_MOVING);
-    WRITE_ENUM(out, x, M_PROTECTING);
-    WRITE_ENUM(out, x, M_ATTACKING);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, MarineStates x);
 
 enum BarrackStates {
     B_UNKNOWN = 0,
@@ -109,24 +71,14 @@ enum BarrackStates {
     B_TRAINING = 3
 };
 
-std::ostream& operator << (std::ostream& out, BarrackStates x) {
-    WRITE_ENUM(out, x, B_UNKNOWN);
-    WRITE_ENUM(out, x, B_CREATING);
-    WRITE_ENUM(out, x, B_IDLE);
-    WRITE_ENUM(out, x, B_TRAINING);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, BarrackStates x);
 
 enum EnemyStates {
     E_UNKNOWN = 0,
     E_VISIBLE = 1
 };
 
-std::ostream& operator << (std::ostream& out, EnemyStates x) {
-    WRITE_ENUM(out, x, E_UNKNOWN);
-    WRITE_ENUM(out, x, E_VISIBLE);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, EnemyStates x);
 
 // State is a container for enum value of unit state.
 // We use it in pair with FSM, see below
@@ -217,19 +169,20 @@ const FSM<EnemyStates> ENEMY_FSM({
 });
 
 template<typename T>
-FSM<T> provideFSM() { throw std::runtime_error("not defined"); }
+FSM<T> provideFSM();
 
 template<>
-FSM<WorkerStates> provideFSM<WorkerStates>() { return WORKER_FSM; }
+FSM<WorkerStates> provideFSM<WorkerStates>();
 template<>
-FSM<DepotStates> provideFSM<DepotStates>() { return DEPOT_FSM; }
+FSM<DepotStates> provideFSM<DepotStates>();
 template<>
-FSM<RefineryStates> provideFSM<RefineryStates>() { return REFINERY_FSM; }
+FSM<RefineryStates> provideFSM<RefineryStates>();
 template<>
-FSM<SupplyStates> provideFSM<SupplyStates>() { return SUPPLY_FSM; }
+FSM<SupplyStates> provideFSM<SupplyStates>();
 template<>
-FSM<EnemyStates> provideFSM<EnemyStates>() { return ENEMY_FSM; }
+FSM<EnemyStates> provideFSM<EnemyStates>();
 template<>
-FSM<MarineStates> provideFSM<MarineStates>() { return MARINE_FSM; }
+FSM<MarineStates> provideFSM<MarineStates>();
 template<>
-FSM<BarrackStates> provideFSM<BarrackStates>() { return BARRACK_FSM; }
+FSM<BarrackStates> provideFSM<BarrackStates>();
+

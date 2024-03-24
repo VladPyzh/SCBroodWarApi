@@ -1,11 +1,10 @@
 #pragma once
 
-#include "MapTools.h"
+#include "../MapTools.h"
 #include "Units.hpp"
 #include <vector>
 #include <BWAPI.h>
 #include <stdexcept>
-#include "MapTools.h"
 #include "Log.hpp"
 
 struct BlackBoard {

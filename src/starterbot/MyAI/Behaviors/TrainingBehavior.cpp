@@ -1,7 +1,7 @@
 #include "TrainingBehavior.hpp"
 
 
-QuotaRequest TrainWorkersBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest TrainWorkersBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
     return QuotaRequest{ 100, 1 - (int)trees.size(), BWAPI::UnitTypes::Terran_Supply_Depot };
 }
 bool TrainWorkersBehaviour::canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
@@ -23,7 +23,7 @@ std::shared_ptr<bt::node> TrainWorkersBehaviour::createBT(Depot depot, const Bla
     });
 }
 
-QuotaRequest TrainMarinesBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest TrainMarinesBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
     return QuotaRequest{ 100, (int)bb.getUnits<BarrackStates>().size() - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
 }
 bool TrainMarinesBehaviour::canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {

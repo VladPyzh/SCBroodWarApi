@@ -1,6 +1,6 @@
 #include "ScoutingBehavior.hpp"
 
-QuotaRequest ScoutEnemyBaseBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest ScoutEnemyBaseBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
     if (!started && bb.getUnits<WorkerStates>().size() > 10)
         return QuotaRequest{ 100, 1, BWAPI::UnitTypes::Terran_SCV };
     else

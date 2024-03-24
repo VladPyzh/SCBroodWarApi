@@ -1,9 +1,10 @@
+#pragma once
 #include "BehaviorBase.hpp"
 
 struct DefendBehavior: public TreeBasedBehavior<MarineStates> {
     DECLARE_STR_TYPE(DefendBehavior)
 
-    QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
+    Behavior::QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
         return QuotaRequest{ 0, 0, BWAPI::UnitTypes::Terran_Marine };
     }
     bool needToReact(Marine marine) {

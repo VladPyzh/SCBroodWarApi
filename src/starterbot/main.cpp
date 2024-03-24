@@ -54,7 +54,6 @@ int main(int argc, char * argv[])
 void PlayGame()
 {
     AI ai;
-    EventHandler handler;
 
     // The main game loop, which continues while we are connected to BWAPI and in a game
     while (BWAPI::BWAPIClient.isConnected() && BWAPI::Broodwar->isInGame())

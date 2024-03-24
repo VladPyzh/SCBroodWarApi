@@ -1,4 +1,4 @@
-#pragma once
+#include "AI.hpp"
 
 void AI::onStart() {
 	// Set our BWAPI options here    

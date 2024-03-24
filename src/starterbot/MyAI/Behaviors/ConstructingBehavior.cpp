@@ -40,7 +40,7 @@ bool ConstructingBehavior::shouldConstruct(const BlackBoard& bb, BWAPI::UnitType
     return canConstruct(bb, type) && unitSlots < 10;
 }
 
-QuotaRequest ConstructingBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest ConstructingBehavior::submitQuotaRequest(const BlackBoard& bb) const {
     if (cur_build_index < build_order.size() && canConstruct(bb, build_order[cur_build_index])) {
         if (cur_build_index == 0) {
             return QuotaRequest{ 5, std::max(0, 1 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };

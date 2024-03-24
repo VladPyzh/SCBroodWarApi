@@ -2,7 +2,7 @@
 
 
 
-QuotaRequest MoveOnRamp::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest MoveOnRamp::submitQuotaRequest(const BlackBoard& bb) const {
     auto unitsInRadius = BWAPI::Broodwar->getUnitsInRadius(ramp_location, 4 * 32);
     int cntMarines = 0;
     for (auto unit : unitsInRadius) {

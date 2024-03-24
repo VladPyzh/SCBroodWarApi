@@ -1,6 +1,6 @@
 #include "AttackBehavior.hpp"
 
-QuotaRequest AttackBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest AttackBehavior::submitQuotaRequest(const BlackBoard& bb) const {
     auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
     int totalEnemies = 0;
     for (Enemy enemy : enemies) {
@@ -40,7 +40,7 @@ std::shared_ptr<bt::node> AttackBehavior::createBT(Marine marine, const BlackBoa
 }
 
 
-QuotaRequest PushBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest PushBehavior::submitQuotaRequest(const BlackBoard& bb) const {
     int marines = bb.getUnits(MarineStates::M_IDLE).size();
 
     if (marines > 20) {

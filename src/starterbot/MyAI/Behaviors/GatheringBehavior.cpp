@@ -1,6 +1,6 @@
 #include "GatheringBehavior.hpp"
 
-QuotaRequest GatherMineralsBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest GatherMineralsBehavior::submitQuotaRequest(const BlackBoard& bb) const {
     return QuotaRequest{ 1, 100, BWAPI::UnitTypes::Terran_SCV };
 }
 std::shared_ptr<bt::node> GatherMineralsBehavior::createBT(Worker worker, const BlackBoard& bb, Controller& controller) {
@@ -40,7 +40,7 @@ std::shared_ptr<bt::node> GatherMineralsBehavior::createBT(Worker worker, const 
         });
 }
 
-QuotaRequest GatherGasBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+Behavior::QuotaRequest GatherGasBehavior::submitQuotaRequest(const BlackBoard& bb) const {
     int gas_boys = 0;
     for (auto worker : bb.m_workers) {
         if (worker->state.inner == WorkerStates::W_GASING) {
