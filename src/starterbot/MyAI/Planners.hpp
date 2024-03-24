@@ -24,7 +24,7 @@ struct Planner {
         managers.emplace_back(std::make_unique<UpgradeMarinesBehaviour>());
         managers.emplace_back(std::make_unique<MoveOnRamp>());
         managers.emplace_back(std::make_unique<LonelyScouting>());
-
+        managers.emplace_back(std::make_unique<SupportBehavior>());
     }
 
 
