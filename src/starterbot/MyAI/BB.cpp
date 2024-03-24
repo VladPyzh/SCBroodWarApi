@@ -95,7 +95,7 @@ void BlackBoard::fetch() {
         } else if (depot->unit->isCompleted()) {
             depot->changeState(DepotStates::D_IDLE);
         } else {
-            throw std::runtime_error("unknown state");
+            // throw std::runtime_error("unknown state");
         }
     }
     for (Refinery ref : m_refineries) {
@@ -111,7 +111,7 @@ void BlackBoard::fetch() {
             ref->changeState(RefineryStates::R_EMPTY);
         }
         else {
-            throw std::runtime_error("unknown state");
+            // throw std::runtime_error("unknown state");
         }
     }
     for (Supply supply : m_supplies) {
@@ -122,7 +122,7 @@ void BlackBoard::fetch() {
         } else if (supply->unit->isCompleted()) {
             supply->changeState(SupplyStates::S_IDLE);
         } else {
-            throw std::runtime_error("unknown state");
+            // throw std::runtime_error("unknown state");
         }
     }
     for (Barrack barrack : m_barracks) {
@@ -138,7 +138,7 @@ void BlackBoard::fetch() {
             barrack->changeState(B_IDLE);
         }
         else {
-            throw std::runtime_error("unknown state");
+            // throw std::runtime_error("unknown state");
         }
     }
     for (Academy academy : m_academy) {
@@ -155,7 +155,7 @@ void BlackBoard::fetch() {
             academy->changeState(A_IDLE);
         }
         else {
-            throw std::runtime_error("unknown state");
+            // throw std::runtime_error("unknown state");
         }
         DEBUG_LOG(ACADEMY_DEBUG, academy->unit->getID() << ' ' << academy->state.inner << ' ' << academy->isActive << '\n');
     }

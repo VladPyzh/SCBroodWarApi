@@ -42,7 +42,7 @@ struct BlackBoard {
     }
     template<typename T>
     std::vector<std::shared_ptr<Unit<T>>> getUnits() const {
-        throw std::runtime_error("not supported");
+        // throw std::runtime_error("not supported");
     }
     template<>
     std::vector<Worker> getUnits<WorkerStates>() const {
