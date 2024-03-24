@@ -193,6 +193,31 @@ void BlackBoard::fetch() {
         }
         DEBUG_LOG(MARINES_DEBUG, marine->unit->getID() << ' ' << marine->state.inner << ' ' << marine->isActive << '\n');
     }
+    for (Medic medic : m_medics) {
+        switch (medic->state.inner) {
+        case MedicStates::Me_UNKNOWN: {
+            if (medic->unit->isBeingConstructed()) {
+                medic->changeState(MedicStates::Me_CREATING);
+            }
+            if (medic->unit->isCompleted()) {
+                medic->changeState(MedicStates::Me_IDLE);
+            }
+            break;
+        }
+        case MedicStates::Me_CREATING: {
+            if (medic->unit->isCompleted()) {
+                medic->changeState(MedicStates::Me_IDLE);
+            }
+            break;
+        }
+        case MedicStates::Me_MOVING: {
+            if (!medic->unit->isMoving()) {
+                medic->changeState(MedicStates::Me_IDLE);
+            }
+            break;
+        }
+        }
+    }
     for (Enemy enemy : m_enemies) {
         enemy->highlight();
         enemy->framesSinceUpdate++;
@@ -308,6 +333,14 @@ void BlackBoard::removeUnit(int unitId) {
         if (m_academy[i]->unit->getID() == unitId) {
             m_academy[i]->isActive = false;
             m_academy.erase(m_academy.begin() + i);
+            return;
+        }
+    }
+
+    for (int i = 0; i < m_medics.size(); i++) {
+        if (m_medics[i]->unit->getID() == unitId) {
+            m_medics[i]->isActive = false;
+            m_medics.erase(m_medics.begin() + i);
             return;
         }
     }

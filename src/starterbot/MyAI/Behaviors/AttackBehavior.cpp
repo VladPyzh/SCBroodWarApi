@@ -62,6 +62,9 @@ std::shared_ptr<bt::node> PushBehavior::createBT(Marine marine, const BlackBoard
                     std::vector<Enemy> nearbyEnemies;
                     for (Enemy enemy : enemies) {
                         if (12 * 32 > enemy->unit->getPosition().getApproxDistance(BWAPI::Position(marine->unit->getPosition()))) {
+                            if (enemy->unit->getType() == BWAPI::UnitTypes::Zerg_Egg || enemy->unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
+                                continue;
+                            }
                             nearbyEnemies.push_back(enemy);
                         }
                     }

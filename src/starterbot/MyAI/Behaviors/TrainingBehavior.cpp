@@ -24,7 +24,7 @@ std::shared_ptr<bt::node> TrainWorkersBehaviour::createBT(Depot depot, const Bla
 }
 
 Behavior::QuotaRequest TrainMarinesBehaviour::submitQuotaRequest(const BlackBoard& bb) const {
-    return QuotaRequest{ 100, (int)bb.getUnits<BarrackStates>().size() - (int)trees.size(), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
+    return QuotaRequest{ 100, std::max(0, (int)bb.getUnits<BarrackStates>().size() - (int)trees.size() - bb.haveRefinery()), BWAPI::UnitTypes::Terran_Barracks }; // MIND QUOTA!!
 }
 bool TrainMarinesBehaviour::canTrainUnit(const BlackBoard& bb, BWAPI::UnitType type) {
     int minerals = bb.minerals();

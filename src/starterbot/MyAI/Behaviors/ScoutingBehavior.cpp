@@ -31,7 +31,7 @@ Behavior::QuotaRequest LonelyScouting::submitQuotaRequest(const BlackBoard& bb) 
     if ((marine_count == 1) && (frame_count < 10000)) { // consider it is a early game
         return QuotaRequest{ 2, 1, BWAPI::UnitTypes::Terran_Marine};
     }
-    else if (marine_count == 1) {
+    else {
         return QuotaRequest{ 2, 0, BWAPI::UnitTypes::Terran_Marine };
     }
 

@@ -28,15 +28,9 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(42, 11) : BWAPI::TilePosition(50, 114),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(37, 4) : BWAPI::TilePosition(54, 114), // fix
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(37, 9) : BWAPI::TilePosition(55, 112),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(37, 16) : BWAPI::TilePosition(55, 109),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(37, 13) : BWAPI::TilePosition(55, 115),
 
-                /*
-        BWAPI::TilePosition(46, 11),
-        BWAPI::TilePosition(46, 7),
-        BWAPI::TilePosition(0, 0),
-        BWAPI::TilePosition(42, 11),
-        BWAPI::TilePosition(38, 11),
-        */
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const;
