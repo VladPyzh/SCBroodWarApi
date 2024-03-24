@@ -128,6 +128,8 @@ std::ostream& operator << (std::ostream& out, EnemyStates x) {
     return out;
 }
 
+// State is a container for enum value of unit state.
+// We use it in pair with FSM, see below
 template <typename T>
 struct State {
     State(): inner(T(0)) {}
@@ -136,6 +138,11 @@ struct State {
     T inner;
 };
 
+
+// FSM is a finite state machine.
+// It is used to keep track of units state and detect anomalies.
+// States are updated either on ordering a new command (see Controller.hpp) or
+// receiving new information from BWAPI (see BB::fetch and Event handler)
 template <typename T>
 struct FSM {
     FSM(std::map<T, std::set<T>> available): available(available) {}

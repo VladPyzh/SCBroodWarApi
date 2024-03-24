@@ -15,8 +15,12 @@
 constexpr bool ASSIGN_BT_DEBUG = false;
 constexpr bool UPDATE_BT_DEBUG = false;
 
+// Behavior is an AI unit of logic.
+// It is a single action that unit wants to do, from strategy perspective
+// Behaviors are responsible for:
+//    1. Determening if that's a good time for such an action through quota mechanism.
+//    2. Telling unit what to do (100% cases - TreeBasedBehavior, see below)
 struct Behavior {
-    
     struct QuotaRequest {
         int priority;
         int quantity;
@@ -31,6 +35,9 @@ struct Behavior {
 
 
 
+// We use Behavior trees for in-game logic
+// Our BT implementation is a header-file library bt.hpp built in functional style
+// This base class is responsible for keeping track of units and their trees.
 template
 <typename T>
 struct TreeBasedBehavior: public Behavior {
@@ -80,6 +87,8 @@ struct TreeBasedBehavior: public Behavior {
         DEBUG_LOG(UPDATE_BT_DEBUG, '\n');
     }
 
+    // We artificially group units together if they are in the same behavior
+    // and were created at the same time. It is useful for forming squads
     std::vector<std::shared_ptr<Unit<T>>> getUnitGroup(std::shared_ptr<Unit<T>> unit) {
         int idx = -1;
         for (int i = 0; i < units.size(); i++) {
@@ -100,4 +109,11 @@ struct TreeBasedBehavior: public Behavior {
     std::vector<std::shared_ptr<bt::node>> trees;
     std::vector<std::shared_ptr<Unit<T>>> units;
     std::vector<int> groupId;
+};
+
+
+template
+<typename T>
+struct ReactiveTreeBehavior : public TreeBasedBehavior<T> {
+    virtual bool needToReact(std::shared_ptr<Unit<T>> unit) = 0;
 };

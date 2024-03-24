@@ -1,3 +1,4 @@
+#pragma once
 #include "Behaviors/ScoutingBehavior.hpp"
 #include "Behaviors/ConstructingBehavior.hpp"
 #include "Behaviors/GatheringBehavior.hpp"
@@ -5,6 +6,9 @@
 #include "Behaviors/MarineBehavior.hpp"
 #include "Behaviors/AttackBehavior.hpp"
 
+
+// Planner is responsible for the cooperation of all available behaviors.
+// It summarizes all the quota requests and resolves conflicts.
 struct Planner {
     Planner(): managers() {
         managers.emplace_back(std::make_unique<GatherGasBehavior>());
@@ -18,6 +22,8 @@ struct Planner {
         managers.emplace_back(std::make_unique<MoveOnRamp>()); // stupidest thing
     }
 
+
+    // Tries to fulfill quota requested from behavior
     template<typename T>
     void assignUnitstoBehavior(std::unique_ptr<Behavior>& b, std::vector<std::shared_ptr<Unit<T>>>& units, Behavior::QuotaRequest quota, const BlackBoard& bb, Controller& controller) {
         int can_provide = std::min(quota.quantity, (int)units.size());
@@ -28,42 +34,7 @@ struct Planner {
         }
     }
 
-    void update(const BlackBoard& bb, Controller& controller) {
-        std::vector<Behavior::QuotaRequest> requests;
-        for (int i = 0; i < managers.size(); i++) {
-            auto& manager = managers[i];
-            auto q = manager->submitQuotaRequest(bb);
-            q.idx = i;
-            requests.push_back(q);
-        }
-        std::sort(requests.rbegin(), requests.rend(), [](Behavior::QuotaRequest a, Behavior::QuotaRequest b) {
-            return a.priority < b.priority;
-        });
-        std::vector<Worker> workers = bb.getUnits(W_IDLE);
-        std::vector<Depot> depots = bb.getUnits(D_IDLE);
-        std::vector<Barrack> barracks = bb.getUnits(B_IDLE);
-        std::vector<Marine> marines = bb.getUnits(M_IDLE);
-
-        for (int i = 0; i < requests.size(); i++) {
-            if (requests[i].type == BWAPI::UnitTypes::Terran_SCV) {
-                assignUnitstoBehavior(managers[requests[i].idx], workers, requests[i], bb, controller);
-            }
-            if (requests[i].type == BWAPI::UnitTypes::Terran_Supply_Depot) {
-                assignUnitstoBehavior(managers[requests[i].idx], depots, requests[i], bb, controller);
-            }
-            if (requests[i].type == BWAPI::UnitTypes::Terran_Barracks) {
-                assignUnitstoBehavior(managers[requests[i].idx], barracks, requests[i], bb, controller);
-            }
-            if (requests[i].type == BWAPI::UnitTypes::Terran_Marine) {
-                assignUnitstoBehavior(managers[requests[i].idx], marines, requests[i], bb, controller);
-            }
-        }
-        
-        for (const auto& manager : managers) {
-            manager->update(bb, controller);
-        }
-       
-    }
-
+    // Update units according to AI logic
+    void update(const BlackBoard& bb, Controller& controller);
     std::vector<std::unique_ptr<Behavior>> managers;
 };

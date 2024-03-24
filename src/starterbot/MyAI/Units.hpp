@@ -13,14 +13,22 @@ struct BaseUnit {
 
 template<typename T>
 struct Unit : BaseUnit {
+    // BWAPI unit object
     BWAPI::Unit unit;
+    // Strongly verifyed state of current unit, see FSM.hpp for more details
     State<T> state;
+    // we calculate number of frames since last state update, because sometimes BWAPI
+    // provides data with a small lag
     int framesSinceUpdate = 0;
+    // determines if unit has a behavior attached or not
     bool isActive = false;
+    // Service variable for debug purposes
     bool isHighLighted = false;
 
     Unit(BWAPI::Unit unit): unit(unit), state() {}
 
+
+    // Changes unit state. Verifies that state transition is defined as available
     void changeState(T newState) {
         if (newState == state.inner) {
             return;
@@ -30,6 +38,7 @@ struct Unit : BaseUnit {
         provideFSM<T>().update(state, newState);
     }
 
+    // Draws a box over unit
     void highlight() {
         if (isHighLighted) {
             BWAPI::Position topLeft(unit->getLeft(), unit->getTop());
