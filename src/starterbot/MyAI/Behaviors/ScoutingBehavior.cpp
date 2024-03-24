@@ -29,50 +29,49 @@ Behavior::QuotaRequest submitQuotaRequest(const BlackBoard& bb) const ; {
     int frame_count = BWAPI::Broodwar->getFrameCount();
 
     if ((marine_count == 1) && (frame_count < 10000)) { // consider it is a early game
-        return QuotaRequest{ 1, 1, BWAPI::UnitTypes::Terran_Marine};
+        return QuotaRequest{ 2, 1, BWAPI::UnitTypes::Terran_Marine};
     }
     else if (marine_count == 1) {
-        return QuotaRequest{ 1, 0, BWAPI::UnitTypes::Terran_Marine };
+        return QuotaRequest{ 2, 0, BWAPI::UnitTypes::Terran_Marine };
     }
 
 }
 
 BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos) const ; {
     BWAPI::TilePosition best_pos(my_pos);
-        std::vector<BWAPI::TilePosition> zero_tiles;
-        std::cerr << when_seen.width() << std::endl;
-        for (int x = 0; x < when_seen.width(); x+=16) {
-            for (int y = 0; y < when_seen.height(); y+=16) {
+    std::vector<BWAPI::TilePosition> zero_tiles;
+    for (int x = 0; x < when_seen.width(); x+=16) {
+        for (int y = 0; y < when_seen.height(); y+=16) {
 
-                if (BWAPI::Broodwar->isWalkable(x * 4, y * 4) && marine->unit->hasPath(BWAPI::Position(x * 32, y * 32))) {
-                //if (BWAPI::Broodwar->isWalkable(x * 4, y * 4) && BWAPI::Broodwar->getRegionAt(BWAPI::Position(x * 32, y * 32))->isAccessible()) {
-                    if (when_seen.get(x, y) < when_seen.get(best_pos.x, best_pos.y)) {
-                        best_pos = BWAPI::TilePosition(x, y);
-                    }
-                    if (when_seen.get(x, y) == 0) {
-                        zero_tiles.push_back(BWAPI::TilePosition(x, y));
-                    }
+            if (BWAPI::Broodwar->isWalkable(x * 4, y * 4) && marine->unit->hasPath(BWAPI::Position(x * 32, y * 32))) {
+            //if (BWAPI::Broodwar->isWalkable(x * 4, y * 4) && BWAPI::Broodwar->getRegionAt(BWAPI::Position(x * 32, y * 32))->isAccessible()) {
+                if (when_seen.get(x, y) < when_seen.get(best_pos.x, best_pos.y)) {
+                    best_pos = BWAPI::TilePosition(x, y);
+                }
+                if (when_seen.get(x, y) == 0) {
+                    zero_tiles.push_back(BWAPI::TilePosition(x, y));
                 }
             }
         }
+    }
 
-        int idx = -1;
-        int dist = 100000;
-        if (zero_tiles.size() > 0) {
-            for (int i = 0; i < zero_tiles.size(); ++i) {
-                if (my_pos.getApproxDistance(zero_tiles[i]) < dist) {
-                    dist = my_pos.getApproxDistance(zero_tiles[i]);
-                    idx = i;
-                }
+    int idx = -1;
+    int dist = 100000;
+    if (zero_tiles.size() > 0) {
+        for (int i = 0; i < zero_tiles.size(); ++i) {
+            if (my_pos.getApproxDistance(zero_tiles[i]) < dist) {
+                dist = my_pos.getApproxDistance(zero_tiles[i]);
+                idx = i;
             }
         }
+    }
 
-        if (idx == -1) {
-            return best_pos;
-        }
-        else {
-            return zero_tiles[idx];
-        }
+    if (idx == -1) {
+        return best_pos;
+    }
+    else {
+        return zero_tiles[idx];
+    }
 }
 
 std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) ; {        
@@ -80,12 +79,11 @@ std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controll
             bt::once([&controller, &bb, marine, this]() {
                 BWAPI::TilePosition target_position(48, 64);
                 marine->framesSinceUpdate = 0;
-                std::cerr << target_position.x << " " << target_position.y << std::endl;
 
                 controller.moveUnit(marine, BWAPI::Position(target_position));
             }),
              bt::repeat_node_until_success(bt::if_true([marine]() {
-                        return marine->framesSinceUpdate++ >= 500;
+                        return marine->framesSinceUpdate++ >= 700;
                     })),
             bt::repeat_node_until_success(
                 bt::sequence({
@@ -96,7 +94,6 @@ std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controll
                         target_position.x = std::max(0, std::min(target_position.x, 96));
                         target_position.y += (rand() % 4) - 2;
                         target_position.y = std::max(0, std::min(target_position.y, 128));
-                        std::cerr << target_position.x << " " << target_position.y << std::endl;
 
                         controller.moveUnit(marine, BWAPI::Position(target_position));
                     }),

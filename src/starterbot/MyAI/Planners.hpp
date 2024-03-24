@@ -15,7 +15,7 @@ struct Planner {
         managers.emplace_back(std::make_unique<GatherGasBehavior>());
         managers.emplace_back(std::make_unique<GatherMineralsBehavior>());
         managers.emplace_back(std::make_unique<ConstructingBehavior>());
-        //managers.emplace_back(std::make_unique<ScoutEnemyBaseBehaviour>());
+        managers.emplace_back(std::make_unique<ScoutEnemyBaseBehaviour>());
         managers.emplace_back(std::make_unique<TrainMedicsBehaviour>());
         managers.emplace_back(std::make_unique<TrainMarinesBehaviour>());
         managers.emplace_back(std::make_unique<TrainWorkersBehaviour>());

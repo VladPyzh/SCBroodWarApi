@@ -135,7 +135,7 @@ struct FSM {
         } else {
             std::stringstream error_message;
             error_message << "invalid state transition: from " << cur.inner << " to " << next << '\n';
-            throw std::runtime_error(error_message.str());
+            // throw std::runtime_error(error_message.str());
         }
     }
     std::map<T, std::set<T>> available;

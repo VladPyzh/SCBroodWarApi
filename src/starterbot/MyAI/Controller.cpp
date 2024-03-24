@@ -74,18 +74,25 @@ void Controller::stop(Marine marine) {
 }
 
 void Controller::moveUnit(Worker worker, BWAPI::Position targetPosition) {
-    //moveUnit<WorkerStates>(worker);
     DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << "moving \n")
     worker->unit->move(targetPosition);
     worker->changeState(WorkerStates::W_SCOUTING);
 }
 
 bool Controller::moveUnit(Marine marine, BWAPI::Position targetPosition) {
-    //moveUnit<WorkerStates>(worker);
     if (marine->unit->move(targetPosition)) {
         marine->changeState(MarineStates::M_MOVING);
         DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_MOVE), "marine unit " << marine->unit->getID() << "moving \n")
         return true;
+    }
+    return false;
+}
+
+bool Controller::moveUnit(Medic medic, BWAPI::Position targetPosition) {
+    if (medic->unit->move(targetPosition)) {
+        medic->changeState(MedicStates::Me_MOVING);
+        DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_MOVE), "medic unit " << medic->unit->getID() << "moving \n")
+            return true;
     }
     return false;
 }
