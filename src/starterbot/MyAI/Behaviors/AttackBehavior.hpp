@@ -217,10 +217,26 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
                 }),
                 bt::sequence({
                     bt::one_of({
-                        bt::if_true([marine](){return marine->state.inner == MarineStates::M_MOVING;}),
-                        bt::once([&controller, marine]() {
+                        bt::if_true([marine, &bb = std::as_const(bb)](){return marine->state.inner == MarineStates::M_MOVING && bb.m_enemies.size() > 0;}),
+                        bt::once([&controller, marine, &bb = std::as_const(bb)]() {
                             BWAPI::Position start_position = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
                             BWAPI::Position target_position = BWAPI::Position();
+
+                            /*
+                            auto enemies = bb.getUnits(EnemyStates::E_UNKNOWN);
+                            auto known_enemies = bb.getUnits(EnemyStates::E_VISIBLE);
+                            enemies.insert(enemies.end(), known_enemies.begin(), known_enemies.end());
+                            int idx = -1;
+                            for (int i = 0; i < enemies.size(); i++) {
+                                auto cur_dist = enemies[i]->unit->getPosition().getApproxDistance(marine->unit->getPosition());
+                                if (idx == -1 || cur_dist < enemies[idx]->unit->getPosition().getApproxDistance(marine->unit->getPosition())) {
+                                    idx = i;
+                                }
+                            }
+
+                            target_position = enemies[idx]->unit->getPosition();
+                            */
+
                             target_position.x = (32 * 96) - start_position.x;
                             target_position.y = (32 * 128) - start_position.y;
                             controller.moveUnit(marine, target_position);
@@ -233,4 +249,26 @@ struct PushBehavior: public TreeBasedBehavior<MarineStates> {
     }
 
     std::vector<Enemy> nearbyEnemies;
+};
+
+struct SupportBehavior : public TreeBasedBehavior<MedicStates> {
+    DECLARE_STR_TYPE(PushBehavior)
+
+    QuotaRequest submitQuotaRequest(const BlackBoard& bb) const {
+        int medics = bb.getUnits(MedicStates::Me_IDLE).size();
+
+        return QuotaRequest{ 50, medics, BWAPI::UnitTypes::Terran_Medic };
+        
+    }
+    std::shared_ptr<bt::node> createBT(Medic medic, const BlackBoard& bb, Controller& controller) {
+        auto res = bt::one_of({
+                bt::sequence({
+                    bt::repeat_until_success([&controller, medic, &bb = std::as_const(bb), this]() {
+                        return controller.moveUnit(medic, BWAPI::Position(48 * 32, 64 * 32));
+                    })
+                }),
+                bt::fail()
+            });
+    }
+
 };

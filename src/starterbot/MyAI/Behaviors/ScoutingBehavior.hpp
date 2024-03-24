@@ -38,10 +38,10 @@ struct LonelyScouting : public TreeBasedBehavior<MarineStates> {
 
         if ((marine_count == 1) && (frame_count < 10000)) { // consider it is a early game
        //     game_is_early = 1;
-            return QuotaRequest{ 1, 1, BWAPI::UnitTypes::Terran_Marine};
+            return QuotaRequest{ 2, 1, BWAPI::UnitTypes::Terran_Marine};
         }
         else {
-            return QuotaRequest{ 1, 0, BWAPI::UnitTypes::Terran_Marine };
+            return QuotaRequest{ 2, 0, BWAPI::UnitTypes::Terran_Marine };
         }
 
     }
@@ -49,7 +49,6 @@ struct LonelyScouting : public TreeBasedBehavior<MarineStates> {
     BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos, Marine marine) const {
         BWAPI::TilePosition best_pos(my_pos);
         std::vector<BWAPI::TilePosition> zero_tiles;
-        std::cerr << when_seen.width() << std::endl;
         for (int x = 0; x < when_seen.width(); x+=16) {
             for (int y = 0; y < when_seen.height(); y+=16) {
 
@@ -89,12 +88,11 @@ struct LonelyScouting : public TreeBasedBehavior<MarineStates> {
             bt::once([&controller, &bb, marine, this]() {
                 BWAPI::TilePosition target_position(48, 64);
                 marine->framesSinceUpdate = 0;
-                std::cerr << target_position.x << " " << target_position.y << std::endl;
 
                 controller.moveUnit(marine, BWAPI::Position(target_position));
             }),
              bt::repeat_node_until_success(bt::if_true([marine]() {
-                        return marine->framesSinceUpdate++ >= 500;
+                        return marine->framesSinceUpdate++ >= 700;
                     })),
             bt::repeat_node_until_success(
                 bt::sequence({
@@ -105,7 +103,6 @@ struct LonelyScouting : public TreeBasedBehavior<MarineStates> {
                         target_position.x = std::max(0, std::min(target_position.x, 96));
                         target_position.y += (rand() % 4) - 2;
                         target_position.y = std::max(0, std::min(target_position.y, 128));
-                        std::cerr << target_position.x << " " << target_position.y << std::endl;
 
                         controller.moveUnit(marine, BWAPI::Position(target_position));
                     }),

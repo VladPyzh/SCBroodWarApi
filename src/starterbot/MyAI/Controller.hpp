@@ -95,6 +95,16 @@ struct Controller {
         return false;
     }
 
+    bool moveUnit(Medic medic, BWAPI::Position targetPosition) {
+        //moveUnit<WorkerStates>(worker);
+        if (medic->unit->move(targetPosition)) {
+            medic->changeState(MedicStates::Me_MOVING);
+            DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_MOVE), "medic unit " << medic->unit->getID() << "moving \n")
+                return true;
+        }
+        return false;
+    }
+
     bool build(Worker worker, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPos, const BlackBoard& bb) {
         DEBUG_LOG(CONTROLLER_DEBUG, "worker unit " << worker->unit->getID() << "wants to build " << buildingType << std::endl)
         if (worker->unit->build(buildingType, buildPos)) {
