@@ -83,7 +83,7 @@ std::ostream& operator << (std::ostream& out, AcademyStates x) {
 }
 
 template<typename T>
-FSM<T> provideFSM() { throw std::runtime_error("not defined"); }
+FSM<T> provideFSM() { /*throw std::runtime_error("not defined"); */}
 
 template<>
 FSM<WorkerStates> provideFSM<WorkerStates>() { return WORKER_FSM; }
