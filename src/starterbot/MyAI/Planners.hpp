@@ -18,6 +18,7 @@ struct Planner {
         managers.emplace_back(std::make_unique<PushBehavior>());
         managers.emplace_back(std::make_unique<MoveOnRamp>()); // stupidest thing
         managers.emplace_back(std::make_unique<LonelyScouting>());
+        managers.emplace_back(std::make_unique<SupportBehavior>());
     }
 
     template<typename T>
@@ -45,8 +46,13 @@ struct Planner {
         std::vector<Depot> depots = bb.getUnits(D_IDLE);
         std::vector<Barrack> barracks = bb.getUnits(B_IDLE);
         std::vector<Marine> marines = bb.getUnits(M_IDLE);
+        std::vector<Medic> medics = bb.getUnits(Me_IDLE);
+
 
         for (int i = 0; i < requests.size(); i++) {
+            if (requests[i].type == BWAPI::UnitTypes::Terran_Medic) {
+                assignUnitstoBehavior(managers[requests[i].idx], medics, requests[i], bb, controller);
+            }
             if (requests[i].type == BWAPI::UnitTypes::Terran_SCV) {
                 assignUnitstoBehavior(managers[requests[i].idx], workers, requests[i], bb, controller);
             }
