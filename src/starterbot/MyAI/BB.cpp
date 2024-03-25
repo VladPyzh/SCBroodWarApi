@@ -256,7 +256,7 @@ BWAPI::UnitType BlackBoard::marineType() const {
     return BWAPI::UnitTypes::Terran_Marine;
 }
 
-BWAPI::UnitType medicType() const {
+BWAPI::UnitType BlackBoard::medicType() const {
     return BWAPI::UnitTypes::Terran_Medic;
 }
 

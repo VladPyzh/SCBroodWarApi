@@ -72,14 +72,7 @@ enum MedicStates {
     Me_HEALING = 4
 };
 
-std::ostream& operator << (std::ostream& out, MedicStates x) {
-    WRITE_ENUM(out, x, Me_UNKNOWN);
-    WRITE_ENUM(out, x, Me_CREATING);
-    WRITE_ENUM(out, x, Me_IDLE);
-    WRITE_ENUM(out, x, Me_MOVING);
-    WRITE_ENUM(out, x, Me_HEALING);
-    return out;
-}
+std::ostream& operator << (std::ostream& out, MedicStates x);
 
 enum BarrackStates {
     B_UNKNOWN = 0,

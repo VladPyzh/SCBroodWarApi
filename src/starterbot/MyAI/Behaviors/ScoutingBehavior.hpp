@@ -15,7 +15,7 @@ struct LonelyScouting : public TreeBasedBehavior<MarineStates> {
 
     QuotaRequest submitQuotaRequest(const BlackBoard& bb) const ;
 
-    BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos) const;
+    BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos, Marine marine) const;
 
     std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) ; 
 };

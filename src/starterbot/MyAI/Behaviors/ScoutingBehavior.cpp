@@ -24,7 +24,7 @@ std::shared_ptr<bt::node> ScoutEnemyBaseBehaviour::createBT(Worker worker, const
 
 
 
-Behavior::QuotaRequest submitQuotaRequest(const BlackBoard& bb) const ; {
+Behavior::QuotaRequest LonelyScouting::submitQuotaRequest(const BlackBoard& bb) const {
     int marine_count = bb.getUnits<MarineStates>().size();
     int frame_count = BWAPI::Broodwar->getFrameCount();
 
@@ -37,7 +37,7 @@ Behavior::QuotaRequest submitQuotaRequest(const BlackBoard& bb) const ; {
 
 }
 
-BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos) const ; {
+BWAPI::TilePosition LonelyScouting::findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_pos, Marine marine) const  {
     BWAPI::TilePosition best_pos(my_pos);
     std::vector<BWAPI::TilePosition> zero_tiles;
     for (int x = 0; x < when_seen.width(); x+=16) {
@@ -74,7 +74,7 @@ BWAPI::TilePosition findTile2Explore(Grid<int>when_seen, BWAPI::TilePosition my_
     }
 }
 
-std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controller& controller) ; {        
+std::shared_ptr<bt::node> LonelyScouting::createBT(Marine marine, const BlackBoard& bb, Controller& controller) {        
     return bt::sequence({
             bt::once([&controller, &bb, marine, this]() {
                 BWAPI::TilePosition target_position(48, 64);
@@ -82,9 +82,9 @@ std::shared_ptr<bt::node> createBT(Marine marine, const BlackBoard& bb, Controll
 
                 controller.moveUnit(marine, BWAPI::Position(target_position));
             }),
-             bt::repeat_node_until_success(bt::if_true([marine]() {
-                        return marine->framesSinceUpdate++ >= 700;
-                    })),
+            bt::repeat_node_until_success(bt::if_true([marine]() {
+                return marine->framesSinceUpdate++ >= 700;
+            })),
             bt::repeat_node_until_success(
                 bt::sequence({
                     bt::once([&controller, &bb, marine, this]() {
