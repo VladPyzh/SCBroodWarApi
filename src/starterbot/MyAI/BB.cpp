@@ -35,7 +35,7 @@ void BlackBoard::fetch() {
             break;
         }
         case WorkerStates::W_IDLE: {
-            if (worker->unit->isCarryingMinerals() && worker->framesSinceUpdate > 10) {
+            if (worker->unit->isCarryingMinerals()) {
                 DEBUG_LOG(CARGO_DEBUG, worker->unit->getID() << ' ' << "had cargo in idle" << std::endl)
                 worker->changeState(WorkerStates::W_IS_TO_RETURN_CARGO);
             }

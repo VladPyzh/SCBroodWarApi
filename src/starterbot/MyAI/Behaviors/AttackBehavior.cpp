@@ -8,7 +8,7 @@ Behavior::QuotaRequest AttackBehavior::submitQuotaRequest(const BlackBoard& bb) 
             totalEnemies++;
         }
     }
-    return QuotaRequest{ 100, 4 * totalEnemies - (int) trees.size(), BWAPI::UnitTypes::Terran_Marine };
+    return QuotaRequest{ 100, 10 * totalEnemies - (int) trees.size(), BWAPI::UnitTypes::Terran_Marine };
 }
 std::shared_ptr<bt::node> AttackBehavior::createBT(Marine marine, const BlackBoard& bb, Controller& controller) {
     auto enemies = bb.getUnits(EnemyStates::E_VISIBLE);
@@ -17,7 +17,7 @@ std::shared_ptr<bt::node> AttackBehavior::createBT(Marine marine, const BlackBoa
 
     for (Enemy enemy : enemies) {
         int dist = enemy->unit->getPosition().getApproxDistance(BWAPI::Position(marine->unit->getPosition()));
-        if (6 > dist) {
+        if (10 > dist) {
             nearbyEnemies.push_back(enemy);
             distances.push_back(dist);
         }
@@ -32,8 +32,13 @@ std::shared_ptr<bt::node> AttackBehavior::createBT(Marine marine, const BlackBoa
     }        
 
     int idx = argmin;
-    auto res = bt::once([&controller, idx, marine, nearbyEnemies, this]() {
-        controller.attack(marine, nearbyEnemies[idx]);
+    auto res = bt::sequential({
+        bt::once([&controller, idx, marine, nearbyEnemies, this]() {
+            controller.attack(marine, nearbyEnemies[idx]);
+        }),
+        bt::wait_until([marine](){
+            return marine->state.inner == M_IDLE;
+        })
     });
 
     return res;
