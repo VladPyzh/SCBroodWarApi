@@ -41,7 +41,13 @@ bool ConstructingBehavior::shouldConstruct(const BlackBoard& bb, BWAPI::UnitType
 }
 
 Behavior::QuotaRequest ConstructingBehavior::submitQuotaRequest(const BlackBoard& bb) const {
+    for (auto unitType : bb.pending_units) {
+        if (unitType.isBuilding()) {
+            return QuotaRequest{ 2, 0, BWAPI::UnitTypes::Terran_SCV };
+        }
+    }
     if (cur_build_index < build_order.size() && canConstruct(bb, build_order[cur_build_index])) {
+        // dont try to start with 2 builders, use one wisely
         if (cur_build_index == 0) {
             return QuotaRequest{ 5, std::max(0, 1 - (int)trees.size()), BWAPI::UnitTypes::Terran_SCV };
         }
