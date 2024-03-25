@@ -3,6 +3,7 @@
 constexpr bool CONTROLLER_DEBUG = false;
 constexpr bool CONTROLLER_DEBUG_ATTACK = false;
 constexpr bool CONTROLLER_DEBUG_MOVE = false;
+constexpr bool CONTROLLER_DEBUG_UPGRADE = false;
 
 void Controller::addPendingUnit(const BlackBoard& bb, BWAPI::UnitType type) {
     BlackBoard& bb_mutable = const_cast<BlackBoard&>(bb);
@@ -118,6 +119,7 @@ bool Controller::upgrade(Academy academy, BWAPI::UpgradeType upgradeType) {
         academy->changeState(AcademyStates::A_UPGRADING);
         return 1;
     } else {
+        DEBUG_LOG((CONTROLLER_DEBUG || CONTROLLER_DEBUG_UPGRADE), "academy " << academy->unit->getID() << "cant upgrade "<< std::endl)
         return 0;
     }
 }

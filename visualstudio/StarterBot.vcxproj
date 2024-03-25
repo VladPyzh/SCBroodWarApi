@@ -29,6 +29,7 @@
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\MarineBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\ScoutingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Behaviors\TrainingBehavior.hpp" />
+    <ClInclude Include="..\src\starterbot\MyAI\Behaviors\UpgradingBehavior.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\bt.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\Controller.hpp" />
     <ClInclude Include="..\src\starterbot\MyAI\EventHandler.hpp" />
@@ -50,6 +51,7 @@
     <ClCompile Include="..\src\starterbot\MyAI\Behaviors\MarineBehavior.cpp" />
     <ClCompile Include="..\src\starterbot\MyAI\Behaviors\ScoutingBehavior.cpp" />
     <ClCompile Include="..\src\starterbot\MyAI\Behaviors\TrainingBehavior.cpp" />
+    <ClCompile Include="..\src\starterbot\MyAI\Behaviors\UpgradingBehavior.cpp" />
     <ClCompile Include="..\src\starterbot\MyAI\bt.cpp" />
     <ClCompile Include="..\src\starterbot\MyAI\Controller.cpp" />
     <ClCompile Include="..\src\starterbot\MyAI\EventHandler.cpp" />

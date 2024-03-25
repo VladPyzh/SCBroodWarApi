@@ -15,6 +15,7 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
       BWAPI::UnitTypes::Terran_Refinery,
       BWAPI::UnitTypes::Terran_Barracks,
       BWAPI::UnitTypes::Terran_Barracks,
+      BWAPI::UnitTypes::Terran_Supply_Depot,
       BWAPI::UnitTypes::Terran_Barracks,
       BWAPI::UnitTypes::Terran_Academy,
     };
@@ -26,8 +27,9 @@ struct ConstructingBehavior : public TreeBasedBehavior<WorkerStates> {
         BWAPI::TilePosition(0, 0),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(42, 11) : BWAPI::TilePosition(50, 114),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(38, 11) : BWAPI::TilePosition(54, 114),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(42, 7) : BWAPI::TilePosition(59, 120),
         (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(33, 11) : BWAPI::TilePosition(59, 114),
-        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(33, 7) : BWAPI::TilePosition(59, 120),
+        (BWAPI::Broodwar->self()->getStartLocation().x < 48) ? BWAPI::TilePosition(38, 7) : BWAPI::TilePosition(54, 120),
     };
 
     bool canConstruct(const BlackBoard& bb, BWAPI::UnitType type) const;

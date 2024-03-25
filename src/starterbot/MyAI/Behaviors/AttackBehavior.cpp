@@ -32,7 +32,7 @@ std::shared_ptr<bt::node> AttackBehavior::createBT(Marine marine, const BlackBoa
     }        
 
     int idx = argmin;
-    auto res = bt::sequential({
+    auto res = bt::sequence({
         bt::once([&controller, idx, marine, nearbyEnemies, this]() {
             controller.attack(marine, nearbyEnemies[idx]);
         }),

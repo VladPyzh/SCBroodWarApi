@@ -5,6 +5,7 @@ constexpr bool CARGO_DEBUG = false;
 constexpr bool REFINERY_DEBUG = false;
 constexpr bool WORKERS_DEBUG = false;
 constexpr bool MARINES_DEBUG = false;
+constexpr bool ACADEMY_DEBUG = false;
 constexpr bool ENEMIES_DEBUG = false;
 
 void BlackBoard::init() {
@@ -142,6 +143,7 @@ void BlackBoard::fetch() {
     }
     for (Academy academy : m_academy) {
         academy->framesSinceUpdate++;
+        academy->isHighLighted = true;
         academy->highlight();
         if (academy->unit->isBeingConstructed()) {
             academy->changeState(A_CREATING);
@@ -155,6 +157,7 @@ void BlackBoard::fetch() {
         else {
             throw std::runtime_error("unknown state");
         }
+        DEBUG_LOG(ACADEMY_DEBUG, academy->unit->getID() << ' ' << academy->state.inner << ' ' << academy->isActive << '\n');
     }
     for (Marine marine : m_marines) {
         marine->framesSinceUpdate++;
@@ -203,6 +206,7 @@ void BlackBoard::fetch() {
     DEBUG_LOG(((ENEMIES_DEBUG && !m_enemies.empty()) || (MARINES_DEBUG && !m_marines.empty()) || (WORKERS_DEBUG && !m_workers.empty())), std::endl);
 
     m_minerals = BWAPI::Broodwar->self()->minerals();
+    m_gas = BWAPI::Broodwar->self()->gas();
     m_unitSlotsAvailable = BWAPI::Broodwar->self()->supplyTotal();
     m_unitSlotsTaken = BWAPI::Broodwar->self()->supplyUsed();
 }
@@ -292,6 +296,14 @@ void BlackBoard::removeUnit(int unitId) {
         if (m_marines[i]->unit->getID() == unitId) {
             m_marines[i]->isActive = false;
             m_marines.erase(m_marines.begin() + i);
+            return;
+        }
+    }
+    
+    for (int i = 0; i < m_academy.size(); i++) {
+        if (m_academy[i]->unit->getID() == unitId) {
+            m_academy[i]->isActive = false;
+            m_academy.erase(m_academy.begin() + i);
             return;
         }
     }
